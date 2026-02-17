@@ -1,0 +1,2083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARRTY trails Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+   <style>
+        :root {
+            --primary: #2c3e50; --secondary: #e74c3c; --accent: #3498db; --light: #ecf0f1; --dark-bg: #222b3c; --dark-card: #2c3a4f; --dark-text: #ecf0f1; --dark-border: #4a5a70; --text: #333; --shadow: 0 4px 6px rgba(0, 0, 0, 0.1); --transition: all 0.3s ease; --gold: #ffd700; --success: #27ae60; --warning: #f39c12; --info: #3498db;
+        }
+        
+        body[data-admin-theme="default"] { --primary: #2c3e50; --secondary: #e74c3c; --accent: #3498db; --gold: #f1c40f; }
+        body[data-admin-theme="crimson"] { --primary: #4a0e0e; --secondary: #c0392b; --accent: #e74c3c; --gold: #f39c12; }
+        body[data-admin-theme="forest"] { --primary: #1e3d2a; --secondary: #27ae60; --accent: #16a085; --gold: #2ecc71; }
+        body[data-admin-theme="royal"] { --primary: #2c1d3c; --secondary: #8e44ad; --accent: #9b59b6; --gold: #f1c40f; }
+        body[data-admin-theme="ocean"] { --primary: #154264; --secondary: #3498db; --accent: #5dade2; --gold: #f4d03f; }
+        body[data-admin-theme="graphite"] { --primary: #34495e; --secondary: #7f8c8d; --accent: #95a5a6; --gold: #bdc3c7; }
+        body[data-admin-theme="sunrise"] { --primary: #c85a04; --secondary: #e67e22; --accent: #f39c12; --gold: #f1c40f; }
+        body[data-admin-theme="violet"] { --primary: #483D8B; --secondary: #6A5ACD; --accent: #9370DB; --gold: #BA55D3; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; min-width: 0; }
+        body { font-family: 'Poppins', sans-serif; color: var(--text); line-height: 1.6; background-color: #f5f7f9; display: flex; min-height: 100vh; transition: background-color 0.3s, color 0.3s; }
+        
+        /* Global Loader to prevent login screen flash */
+        #global-loader { position: fixed; inset: 0; background: #2c3e50; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; transition: opacity 0.4s ease; }
+        .spinner { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Dark Mode & General Styles */
+        body.dark-mode { background-color: var(--dark-bg); color: var(--dark-text); }
+        body.dark-mode .main-content { color: var(--dark-text); }
+        body.dark-mode .admin-card { background-color: var(--dark-card); border: 1px solid var(--dark-border); }
+        body.dark-mode .header { background: var(--dark-card); }
+        body.dark-mode .page-title h1, body.dark-mode .admin-card h2, body.dark-mode .user-info span, body.dark-mode .manual-theme-editor h3 { color: var(--dark-text); }
+        body.dark-mode .admin-card h2 { border-bottom-color: var(--dark-border); }
+        body.dark-mode .form-group input, body.dark-mode .form-group textarea, body.dark-mode .form-group select { background-color: var(--dark-bg); color: var(--dark-text); border-color: var(--dark-border); }
+        body.dark-mode .artworks-list th, body.dark-mode .orders-list th, body.dark-mode .coupons-list th, body.dark-mode .payment-methods-list th, body.dark-mode .login-history-list th { background-color: var(--dark-bg); }
+        body.dark-mode .artworks-list td, body.dark-mode .orders-list td, body.dark-mode .coupons-list td, body.dark-mode .payment-methods-list td, body.dark-mode .login-history-list td { border-bottom-color: var(--dark-border); }
+        body.dark-mode .artworks-list tr:hover, body.dark-mode .orders-list tr:hover, body.dark-mode .coupons-list tr:hover, body.dark-mode .payment-methods-list tr:hover, body.dark-mode .login-history-list tr:hover { background-color: rgba(255, 255, 255, 0.05); }
+        body.dark-mode .modal-content { background-color: var(--dark-card); }
+        body.dark-mode .modal-header { border-bottom-color: var(--dark-border); }
+        body.dark-mode ::placeholder { color: #8a9bb3; }
+        body.dark-mode .custom-radio label::before { background-color: var(--dark-bg); border-color: var(--dark-border); }
+        body.dark-mode .custom-radio input:checked + label::after { background-color: var(--accent); }
+        body.dark-mode .color-picker-wrapper { background-color: var(--dark-bg); border-color: var(--dark-border); }
+        body.dark-mode .bar-chart { border-color: var(--dark-border); }
+        body.dark-mode .table-responsive { border: 1px solid var(--dark-border); border-radius: 5px; }
+        body.dark-mode .payment-proof-container { background: var(--dark-bg); border-color: var(--dark-border); }
+        body.dark-mode .payment-proof-container h3 { border-bottom-color: var(--dark-border); }
+        
+        /* CSS FIX: Constrain screenshot size in admin modal */
+        .payment-proof-screenshot img { max-width: 100%; max-height: 250px; width: auto; object-fit: contain; border-radius: 8px; border: 2px solid #ddd; margin-top: 10px; background-color: #f9f9f9; }
+        body.dark-mode .payment-proof-screenshot img { border-color: var(--dark-border); background-color: var(--dark-bg); }
+        
+        /* Size Rows & Secret Manager */
+        .size-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; background: rgba(0,0,0,0.03); padding: 10px; border: 1px solid #ddd; border-radius: 5px; transition: all 0.2s; }
+        .size-row:hover { border-color: var(--accent); background: rgba(0,0,0,0.05); }
+        body.dark-mode .size-row { background: rgba(255,255,255,0.05); border-color: var(--dark-border); }
+        .size-row input { flex: 1; }
+        .discount-input { border-color: var(--success) !important; background-color: rgba(39, 174, 96, 0.05) !important; }
+        
+        /* History Table & Size Manager UI */
+        .history-item { border-left: 4px solid var(--accent); padding: 15px; margin-bottom: 15px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-radius: 0 5px 5px 0; position: relative; border: 1px solid #eee; }
+        body.dark-mode .history-item { background: var(--dark-card); border-color: var(--dark-border); }
+        .history-item.delete-action { border-left-color: var(--secondary); }
+        .history-meta { font-size: 0.85em; color: #777; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        body.dark-mode .history-meta { color: #aaa; }
+        .history-changes { font-family: monospace; background: rgba(0,0,0,0.03); padding: 10px; margin: 8px 0; font-size: 0.9em; border-radius: 4px; white-space: pre-wrap; }
+        body.dark-mode .history-changes { background: rgba(255,255,255,0.05); color: #ccc; }
+        .revert-timer { color: var(--secondary); font-weight: bold; font-size: 0.85em; display: inline-flex; align-items: center; gap: 5px; }
+        
+        .size-manage-row { display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 10px; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+        body.dark-mode .size-manage-row { border-bottom-color: var(--dark-border); }
+        .size-manage-row:last-child { border-bottom: none; }
+        
+        #secret-manager-ui { border: 2px dashed var(--accent); padding: 20px; border-radius: 10px; display: none; margin-top: 20px; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Login & Base Layout */
+        .login-container { display: none; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, var(--primary) 0%, var(--dark-bg) 100%); width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; }
+        .login-container.show { display: flex !important; }
+        .login-box { background: white; padding: 40px; border-radius: 10px; box-shadow: var(--shadow); width: 100%; max-width: 400px; }
+        .login-logo { text-align: center; margin-bottom: 30px; }
+        .login-logo h2 { font-size: 28px; color: var(--primary); }
+        .login-logo span { color: var(--secondary); }
+        .login-form .form-group { margin-bottom: 20px; }
+        .login-form label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .login-form input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-family: 'Poppins', sans-serif; }
+        .login-btn { width: 100%; padding: 12px; background: linear-gradient(45deg, var(--secondary), var(--primary)); color: white; border: none; border-radius: 5px; font-weight: 500; cursor: pointer; transition: var(--transition); }
+        .login-btn:hover { opacity: 0.9; }
+        .login-error { color: var(--secondary); text-align: center; margin-top: 15px; display: none; }
+        
+        .admin-content { display: none; width: 100%; }
+        .admin-content.active { display: flex; width: 100%; flex-direction: row; }
+        .sidebar { width: 250px; background: linear-gradient(to bottom, var(--primary), #222b3c); color: white; padding: 20px 0; height: 100vh; position: fixed; left: 0; top: 0; box-shadow: var(--shadow); z-index: 100; overflow-y: auto; transition: width 0.3s ease; }
+        .logo { text-align: center; padding: 0 20px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px; }
+        .logo h2 { font-size: 24px; color: white; display: flex; align-items: center; justify-content: center; }
+        .logo span { color: var(--gold); }
+        .logo i { margin-right: 10px; color: var(--gold); }
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu li { margin-bottom: 5px; }
+        .sidebar-menu a { display: block; color: #ddd; text-decoration: none; padding: 12px 20px; transition: var(--transition); white-space: nowrap; }
+        .sidebar-menu a:hover, .sidebar-menu a.active { background-color: rgba(255, 255, 255, 0.1); color: white; border-left: 4px solid var(--gold); }
+        .sidebar-menu i { width: 25px; margin-right: 10px; }
+        .main-content { flex: 1; margin-left: 250px; padding: 20px; transition: margin-left 0.3s ease; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; border-radius: 8px; box-shadow: var(--shadow); margin-bottom: 20px; }
+        .page-title h1 { font-size: 24px; color: var(--primary); display: flex; align-items: center; }
+        .page-title i { margin-right: 10px; color: var(--gold); }
+        .admin-card { background-color: white; border-radius: 8px; box-shadow: var(--shadow); padding: 20px; margin-bottom: 20px; }
+        .admin-card h2 { font-size: 20px; color: var(--primary); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--light); display: flex; align-items: center; }
+        .admin-card h2 i { margin-right: 10px; color: var(--gold); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-family: 'Poppins', sans-serif; }
+        .form-group textarea { min-height: 120px; }
+        .btn { display: inline-block; padding: 12px 25px; color: white; text-decoration: none; border-radius: 5px; font-weight: 500; transition: var(--transition); border: none; cursor: pointer; background: linear-gradient(45deg, var(--secondary), var(--primary)); }
+        .btn:hover { opacity: 0.9; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }
+        .btn-success { background: linear-gradient(45deg, var(--success), #229954); }
+        .btn-warning { background: linear-gradient(45deg, var(--warning), #e67e22); }
+        .btn-info { background: linear-gradient(45deg, var(--info), #2980b9); }
+        .btn-danger { background: linear-gradient(45deg, #e74c3c, #c0392b); }
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .artworks-list, .orders-list, .coupons-list, .payment-methods-list, .login-history-list { width: 100%; border-collapse: collapse; margin-top: 20px; min-width: 600px; }
+        .artworks-list th, .artworks-list td, .orders-list th, .orders-list td, .coupons-list th, .coupons-list td, .payment-methods-list th, .payment-methods-list td, .login-history-list th, .login-history-list td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; vertical-align: middle; white-space: nowrap; }
+        .artworks-list th, .orders-list th, .coupons-list th, .payment-methods-list th, .login-history-list th { background-color: var(--light); font-weight: 600; }
+        .artworks-list tr:hover, .orders-list tr:hover, .coupons-list tr:hover, .payment-methods-list tr:hover, .login-history-list tr:hover { background-color: #f9f9f9; }
+        .action-btn { padding: 6px 12px; margin-right: 5px; border-radius: 4px; border: none; cursor: pointer; transition: var(--transition); }
+        .edit-btn { background-color: var(--accent); color: white; }
+        .delete-btn { background-color: #e74c3c; color: white; }
+        .view-btn { background-color: var(--success); color: white; }
+        .action-btn:hover { opacity: 0.9; transform: scale(1.05); }
+        .artwork-image { width: 80px; height: 60px; object-fit: cover; border-radius: 4px; }
+        .payment-logo-preview { width: 60px; height: auto; vertical-align: middle; }
+        .status-message { padding: 10px; margin: 10px 0; border-radius: 5px; text-align: center; display: none; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .order-status, .payment-status { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #333; text-align: center; }
+        .status-pending { background-color: #ffeaa7; } .status-processing { background-color: #81ecec; } .status-prepared { background-color: #74b9ff; } .status-finalization { background-color: #a29bfe; } .status-delivery { background-color: #fd79a8; } .status-delivered { background-color: #55efc4; } .status-cancelled { background-color: #fab1a0; }
+        .payment-status-unpaid { background-color: #fab1a0; color: #d63031; }
+        .payment-status-pending_confirmation { background-color: #ffeaa7; color: #e17055; }
+        .payment-status-paid { background-color: #000000; color: #09ee42; }
+        .social-input-group { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+        .toggle-container { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .toggle-switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(26px); }
+        .delivery-rule { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px solid #eee; border-radius: 5px; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .dashboard-stat { color: white; padding: 25px; border-radius: 8px; position: relative; overflow: hidden; }
+        .dashboard-stat h3 { margin-bottom: 10px; font-size: 1rem; }
+        .dashboard-stat p { font-size: 2.2rem; font-weight: 600; }
+        .dashboard-stat i { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 4rem; opacity: 0.2; }
+        .stat-revenue { background: linear-gradient(45deg, #f1c40f, #f39c12); } .stat-artworks { background: linear-gradient(45deg, var(--info), #2980b9); } .stat-pending { background: linear-gradient(45deg, #e74c3c, #c0392b); } .stat-avg-order { background: linear-gradient(45deg, #9b59b6, #8e44ad); }
+        .bulk-actions-container { display: none; align-items: center; gap: 15px; padding: 10px; background-color: var(--light); border-radius: 5px; margin-bottom: 15px; }
+        .table-checkbox { width: 20px; height: 20px; }
+        .custom-section-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 10px; }
+        .custom-section-item.disabled { background-color: #f9f9f9; opacity: 0.6; }
+        .code-editor { font-family: monospace; min-height: 150px; background-color: #f4f4f4; border: 1px solid #ddd; }
+        .order-items-container { margin: 15px 0; border: 1px solid #ddd; border-radius: 5px; padding: 10px; }
+        .order-item { padding: 10px; border-bottom: 1px solid #eee; } .order-item:last-child { border-bottom: none; }
+        .order-total { margin-top: 15px; padding-top: 15px; border-top: 2px solid #ddd; text-align: right; font-size: 1.1em; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; border-radius: 8px; padding: 20px; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #ddd; }
+        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; }
+        .theme-selector { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; }
+        .theme-swatch { border: 2px solid #ccc; border-radius: 8px; padding: 10px; cursor: pointer; transition: all 0.2s ease; text-align: center; }
+        .theme-swatch.active, .theme-swatch:hover { border-color: var(--primary); box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .theme-swatch .colors { display: flex; justify-content: center; gap: 5px; margin-bottom: 8px; }
+        .theme-swatch .color-dot { width: 20px; height: 20px; border-radius: 50%; border: 1px solid #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .color-picker-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .color-picker-wrapper { width: 40px; height: 40px; border-radius: 5px; border: 1px solid #ddd; cursor: pointer; position: relative; overflow: hidden; }
+        .color-picker-wrapper input[type="color"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .manual-theme-editor { display: none; border-top: 1px solid #eee; margin-top: 15px; padding-top: 15px; }
+        .manual-theme-editor.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .manual-theme-editor h3 { grid-column: 1 / -1; color: var(--primary); margin-bottom: 0; }
+        .custom-radio { display: inline-block; margin-right: 15px; }
+        .custom-radio input { display: none; }
+        .custom-radio label { cursor: pointer; position: relative; padding-left: 30px; }
+        .custom-radio label::before { content: ''; position: absolute; left: 0; top: 2px; width: 18px; height: 18px; border: 2px solid #aaa; border-radius: 50%; background: #fff; }
+        .custom-radio label::after { content: ''; position: absolute; left: 5px; top: 7px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); transform: scale(0); transition: transform 0.2s ease; }
+        .custom-radio input:checked + label::after { transform: scale(1); }
+        .background-options { display: none; padding-top: 15px; margin-top: 15px; border-top: 1px solid #eee; }
+        .background-options.active { display: block; }
+        .gradient-picker { display: flex; gap: 20px; align-items: center; }
+        
+        .status-select-wrapper { position: relative; display: inline-block; }
+        .status-select-wrapper select { -webkit-appearance: none; -moz-appearance: none; appearance: none; padding: 8px 30px 8px 12px; border: 1px solid #ddd; border-radius: 5px; background-color: white; font-family: 'Poppins', sans-serif; font-weight: 500; cursor: pointer; transition: var(--transition); }
+        .status-select-wrapper select:hover { border-color: var(--accent); }
+        .status-select-wrapper::after { content: '\f078'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; top: 50%; right: 12px; transform: translateY(-50%); pointer-events: none; color: #555; }
+        body.dark-mode .status-select-wrapper select { background-color: var(--dark-bg); color: var(--dark-text); border-color: var(--dark-border); }
+        body.dark-mode .status-select-wrapper::after { color: var(--dark-text); }
+        .chart-container { overflow-x: auto; padding-bottom: 10px; }
+        .bar-chart { display: flex; justify-content: space-around; align-items: flex-end; height: 250px; border-left: 2px solid #ccc; border-bottom: 2px solid #ccc; padding: 10px 10px 40px 10px; min-width: 500px; }
+        .bar { width: 50px; background-color: var(--primary); text-align: center; color: white; position: relative; transition: height 0.5s ease-out; flex-shrink: 0; }
+        .bar-label { position: absolute; bottom: -35px; width: 100%; text-align: center; font-size: 12px; word-break: break-word; color: var(--text); }
+        body.dark-mode .bar-label { color: var(--dark-text); }
+        .bar-value { padding: 5px; font-weight: bold; }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; }
+            .sidebar .logo h2, .sidebar-menu span { display: none; }
+            .main-content { margin-left: 70px; padding: 10px; }
+            .header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .user-info { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
+            .page-title h1 { font-size: 20px; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .admin-card { padding: 15px; }
+            .login-box { padding: 20px; width: 90%; }
+            .modal-content { padding: 15px; }
+            .btn { padding: 10px 18px; }
+            .bulk-actions-container, .delivery-rule, .social-input-group, .gradient-picker { flex-wrap: wrap; }
+            .bar { width: 40px; }
+            .manual-theme-editor.active { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body data-admin-theme="default">
+
+    <div id="global-loader">
+        <div class="spinner"></div>
+        <h2 style="font-family: 'Poppins', sans-serif;">ArrTTy Admin Loading...</h2>
+    </div>
+
+    <div id="login-screen" class="login-container">
+        <div class="login-box">
+            <div class="login-logo"><h2><i class="fas fa-palette"></i> Arr<span>TT</span>y Admin</h2></div>
+            <form id="login-form" class="login-form">
+                <div class="form-group"><label for="email">Email</label><input type="email" id="email" required></div>
+                <div class="form-group"><label for="password">Password</label><input type="password" id="password" required></div>
+                <button type="submit" class="login-btn">Login</button>
+                <div id="login-error" class="login-error">Invalid credentials</div>
+            </form>
+            
+            <div id="two-factor-screen" style="display: none; text-align: center;">
+                <h3><i class="fas fa-shield-alt"></i> Security Verification</h3>
+                <p id="two-factor-msg" style="margin-bottom: 15px; font-size: 0.9em;"></p>
+                
+                <div id="pin-input-group" style="display:none; margin-bottom: 15px;">
+                    <input type="password" id="verify-pin-input" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px;" placeholder="Enter Admin PIN">
+                </div>
+                
+                <div id="otp-input-group" style="display:none; margin-bottom: 15px;">
+                    <input type="text" id="verify-otp-input" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px;" placeholder="Enter 6-Digit Email OTP">
+                </div>
+
+                <button class="login-btn" onclick="verifyTwoFactor()">Verify Identity</button>
+                <button class="btn btn-warning" style="margin-top: 10px; width: 100%;" onclick="auth.signOut(); showLoginScreen();">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-content" class="admin-content">
+        <div class="sidebar">
+            <div class="logo"><h2><i class="fas fa-palette"></i>Ar<span>TT</span>y</h2></div>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active" data-tab="dashboard"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+                <li><a href="#" data-tab="orders"><i class="fas fa-shopping-cart"></i> <span>Orders</span></a></li>
+                <li><a href="#" data-tab="artworks"><i class="fas fa-paint-brush"></i> <span>Artworks</span></a></li>
+             <li><a href="#" data-tab="secret-settings"><i class="fas fa-user-secret"></i> <span>Secret Settings</span></a></li>
+                <li><a href="#" data-tab="coupons"><i class="fas fa-tags"></i> <span>Coupons</span></a></li>
+                <li><a href="#" data-tab="payment-methods"><i class="fas fa-credit-card"></i> <span>Payment Methods</span></a></li>
+                <li><a href="#" data-tab="website-theme"><i class="fas fa-palette"></i> <span>Website Theme</span></a></li>
+                <li><a href="#" data-tab="admin-appearance"><i class="fas fa-swatchbook"></i> <span>Admin Appearance</span></a></li>
+                <li><a href="#" data-tab="delivery-fee"><i class="fas fa-truck"></i> <span>Delivery Fee</span></a></li>
+                <li><a href="#" data-tab="receipt-settings"><i class="fas fa-receipt"></i> <span>Receipt Settings</span></a></li>
+                <li><a href="#" data-tab="policy-settings"><i class="fas fa-file-alt"></i> <span>Policies</span></a></li>
+                <li><a href="#" data-tab="site-settings"><i class="fas fa-cog"></i> <span>Site Settings</span></a></li>       
+                <li><a href="#" data-tab="account-history"><i class="fas fa-history"></i> <span>Activity & Trash</span></a></li>
+                 <li><a href="#" data-tab="login-history"><i class="fas fa-sign-in-alt"></i> <span>Login History</span></a></li>
+                <li><a href="#" data-tab="backup-restore"><i class="fas fa-database"></i> <span>Backup & Restore</span></a></li>
+                <li><a href="#" data-tab="account-settings"><i class="fas fa-user-cog"></i> <span>Account Settings</span></a></li>
+                <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <div class="page-title"><h1 id="page-header-title"><i class="fas fa-home"></i>Dashboard</h1></div>
+                <div class="user-info">
+                    <span>Welcome, <span id="admin-name">Admin</span></span>
+                    <label class="toggle-switch" title="Toggle Dark Mode">
+                        <input type="checkbox" id="dark-mode-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div id="status-message" class="status-message"></div>
+
+            <div id="dashboard-tab" class="tab-content active">
+                <div class="admin-card">
+                    <h2><i class="fas fa-chart-line"></i>Dashboard Overview</h2>
+                    <div class="dashboard-grid">
+                        <div class="dashboard-stat stat-revenue"><h3>Total Revenue</h3><p id="total-revenue">PKR 0</p><i class="fas fa-dollar-sign"></i></div>
+                        <div class="dashboard-stat stat-artworks"><h3>Total Artworks</h3><p id="total-artworks">0</p><i class="fas fa-palette"></i></div>
+                        <div class="dashboard-stat stat-pending"><h3>Pending Orders</h3><p id="pending-orders">0</p><i class="fas fa-hourglass-half"></i></div>
+                        <div class="dashboard-stat stat-avg-order"><h3>Avg. Order Value</h3><p id="avg-order-value">PKR 0</p><i class="fas fa-chart-pie"></i></div>
+                    </div>
+                </div>
+                <div class="admin-card">
+                    <h2><i class="fas fa-chart-bar"></i>Artworks by Category</h2>
+                    <div class="chart-container">
+                        <div class="bar-chart" id="category-chart"></div>
+                    </div>
+                </div>
+                <div class="admin-card">
+                    <h2><i class="fas fa-receipt"></i>Recent 5 Orders</h2>
+                    <div class="table-responsive">
+                        <table class="orders-list">
+                            <thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead>
+                            <tbody id="recent-orders-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="artworks-tab" class="tab-content">
+                <div class="admin-card">
+                    <h2><i class="fas fa-plus-circle"></i>Add New Artwork</h2>
+                    <form id="add-artwork-form">
+                        <div class="form-group"><label for="title">Title *</label><input type="text" id="title" required></div>
+                        <div class="form-group"><label for="artist">Artist *</label><input type="text" id="artist" required></div>
+                        <div class="form-group"><label for="imageUrls">Image URLs (comma-separated) *</label><textarea id="imageUrls" required></textarea></div>
+                        
+                        <div class="form-group" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <label for="price">Original Price (PKR) *</label>
+                                <input type="number" id="price" min="0" step="0.01" required>
+                            </div>
+                            <div style="flex: 1; min-width: 200px;">
+                                <label for="discountPrice" style="color: var(--secondary);">Discounted Price (Optional)</label>
+                                <input type="number" id="discountPrice" class="discount-input" min="0" step="0.01" placeholder="Fill this to cut original price">
+                            </div>
+                             <div style="flex: 1; min-width: 200px;">
+                                <label for="stock">Pieces Left (Stock)</label>
+                                <input type="number" id="stock" placeholder="e.g. 10">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="background: rgba(0,0,0,0.02); padding: 15px; border: 1px dashed var(--dark-border); border-radius: 8px;">
+                            <label>Product Sizes & Prices</label>
+                            <div id="size-rows-container"></div>
+                            <button type="button" class="btn btn-info" onclick="addSizeRow('size-rows-container')" style="margin-top:10px; font-size: 0.8rem;">+ Add Size Variant</button>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Availability Status</label>
+                            <select id="p-availability">
+                                <option value="available">Available</option>
+                                <option value="sold_out">Sold Out</option>
+                                <option value="unavailable">Hidden</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group"><label for="category">Category *</label><select id="category" required><option value="">Select Category</option><option value="Paintings">Paintings</option><option value="Bracelets">Bracelets</option><option value="Bouquets">Bouquets</option><option value="Cards">Cards</option><option value="Gift Boxes">Gift Boxes</option><option value="Other Creations">Other Creations</option></select></div>
+                        <div class="form-group"><label for="description">Description</label><textarea id="description"></textarea></div>
+                        <button type="submit" class="btn">Add Artwork</button>
+                    </form>
+                </div>
+                <div class="admin-card">
+                    <h2><i class="fas fa-cog"></i>Manage Artworks</h2>
+                    <div id="artworks-bulk-actions" class="bulk-actions-container">
+                        <span id="artworks-selection-count">0 items selected</span>
+                        <button class="btn btn-danger" id="bulk-delete-artworks-btn"><i class="fas fa-trash"></i> Delete to Trash</button>
+                        <button class="btn btn-warning" id="bulk-edit-artworks-btn"><i class="fas fa-edit"></i> Edit</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="artworks-list">
+                            <thead><tr><th><input type="checkbox" class="table-checkbox" id="select-all-artworks"></th><th>Image</th><th>Service ID</th><th>Title</th><th>Price</th><th>Category</th><th>Actions</th></tr></thead>
+                            <tbody id="artworks-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="secret-settings-tab" class="tab-content">
+                <div class="admin-card">
+                    <h2><i class="fas fa-user-secret"></i> Product Secret Manager</h2>
+                    <p style="margin-bottom: 15px;">Search by Service ID to change availability or set viewing counters.</p>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <input type="text" id="secret-search-id" placeholder="Enter Service ID (e.g., AT1001)">
+                        <button class="btn btn-info" onclick="secretSearch()">Search</button>
+                    </div>
+
+                    <div id="secret-manager-ui">
+                        <h3 id="secret-mgr-title" style="margin-bottom:15px; color: var(--accent);">Product Name</h3>
+                        <input type="hidden" id="secret-doc-id">
+                        
+                        <div class="form-group">
+                            <label>Overall Product Availability</label>
+                            <select id="secret-status">
+                                <option value="available">Available (Show Button)</option>
+                                <option value="sold_out">Sold Out (Global Badge)</option>
+                                <option value="unavailable">Hidden (Remove from Gallery)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="background: rgba(0,0,0,0.03); padding: 15px; border-radius: 8px;">
+                            <label style="color: var(--secondary);"><i class="fas fa-ruler"></i> Size-Specific Stock Control</label>
+                            <p style="font-size: 0.8rem; margin-bottom: 10px;">Mark specific sizes as "Sold Out" without hiding the whole product.</p>
+                            <div id="secret-size-list">
+                                </div>
+                        </div>
+                        
+                        <div class="toggle-container">
+                            <span>Enable Viewing Eye Counter</span>
+                            <label class="toggle-switch"><input type="checkbox" id="secret-eye-enabled"><span class="slider"></span></label>
+                        </div>
+                        <div class="form-group">
+                            <label>Viewing Quantity (No Limit)</label>
+                            <input type="number" id="secret-eye-count" placeholder="Number of people viewing">
+                        </div>
+                        <button class="btn btn-success" onclick="secretSave()">Save All Changes</button>
+                    </div>
+
+                    <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--dark-border);">
+
+                    <div class="admin-card" style="background: rgba(52, 152, 219, 0.1); border: 1px solid rgba(52, 152, 219, 0.3);">
+                        <h3><i class="fas fa-globe"></i> Universal Eye View</h3>
+                        <p>Apply this view count to <strong>ALL</strong> products instantly.</p>
+                        <div style="display: flex; gap: 10px; margin-top:10px; flex-wrap:wrap;">
+                            <input type="number" id="universal-eye-count" placeholder="Count for all products" style="flex:1; min-width:150px;">
+                            <button class="btn btn-warning" onclick="applyUniversal()">Apply to All</button>
+                            <button class="btn btn-danger" onclick="disableUniversal()"><i class="fas fa-power-off"></i> Disable All</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="account-history-tab" class="tab-content">
+                <div class="admin-card">
+                    <h2><i class="fas fa-history"></i> Account History & Audit Log</h2>
+                    <p style="margin-bottom: 15px;">Track all changes made by any Admin. Deleted items can be restored within <strong>24 hours</strong>.</p>
+                    <div id="history-feed">
+                        </div>
+                </div>
+            </div>
+
+            <div id="login-history-tab" class="tab-content">
+                <div class="admin-card">
+                    <h2><i class="fas fa-user-clock"></i> Recent Admin Logins</h2>
+                    <p style="margin-bottom: 15px;">Monitor all successful admin login attempts across all devices.</p>
+                    <div class="table-responsive">
+                        <table class="login-history-list">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Admin Email</th>
+                                    <th>Device / Browser Info</th>
+                                    <th>Location (IP)</th> </tr>
+                                </tr>
+                            </thead>
+                            <tbody id="login-history-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="orders-tab" class="tab-content">
+                <div class="admin-card">
+                    <h2><i class="fas fa-shopping-cart"></i>Manage Orders</h2>
+                     <div id="orders-bulk-actions" class="bulk-actions-container">
+                        <span id="orders-selection-count">0 items selected</span>
+                        <button class="btn btn-danger" id="bulk-delete-orders-btn"><i class="fas fa-trash"></i> Delete to Trash</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="orders-list">
+                           <thead>
+                                <tr>
+                                    <th><input type="checkbox" class="table-checkbox" id="select-all-orders"></th>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Total</th>
+                                    <th>Payment Status</th>
+                                    <th>Order Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="coupons-tab" class="tab-content">
+                <div class="admin-card">
+                    <h2><i class="fas fa-plus-circle"></i>Add/Edit Coupon</h2>
+                    <form id="coupon-form">
+                        <input type="hidden" id="coupon-id">
+                        <div class="form-group"><label for="coupon-code">Coupon Code *</label><input type="text" id="coupon-code" placeholder="e.g., SUMMER25" required></div>
+                        <div class="form-group"><label for="coupon-discount">Discount (%) *</label><input type="number" id="coupon-discount" min="1" max="100" placeholder="e.g., 25" required></div>
+                        <div class="form-group"><label for="coupon-limit">Total Usage Limit *</label><input type="number" id="coupon-limit" min="1" value="100" required></div>
+                        <div class="form-group">
+                            <div class="toggle-container" style="margin-bottom:0;"><span>Allow only one use per customer</span><label class="toggle-switch"><input type="checkbox" id="one-time-per-customer"><span class="slider"></span></label></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="coupon-status">Status</label>
+                            <select id="coupon-status"><option value="active">Active</option><option value="inactive">Inactive</option></select>
+                        </div>
+                        <button type="submit" class="btn">Save Coupon</button>
+                        <button type="button" class="btn btn-warning" id="clear-coupon-form">Clear Form</button>
+                    </form>
+                </div>
+                <div class="admin-card">
+                    <h2><i class="fas fa-tags"></i>Manage Coupons</h2>
+                    <div class="table-responsive">
+                        <table class="coupons-list">
+                            <thead><tr><th>Code</th><th>Discount</th><th>Used/Limit</th><th>Status</th><th>One-Time</th><th>Actions</th></tr></thead>
+                            <tbody id="coupons-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="payment-methods-tab" class="tab-content">
+                <div class="admin-card">
+                    <h2><i class="fas fa-plus-circle"></i>Add/Edit Payment Method</h2>
+                    <form id="payment-method-form">
+                        <input type="hidden" id="payment-method-id">
+                        <div class="form-group">
+                            <label for="payment-method-name">Method Name *</label>
+                            <input type="text" id="payment-method-name" placeholder="e.g., Easypaisa, Bank Alfalah" required>
+                        </div>
+                        <div class="form-group"><label for="payment-method-owner-name">Account Owner Name (Optional)</label><input type="text" id="payment-method-owner-name" placeholder="e.g., John Doe"></div>
+                        <div class="form-group">
+                            <label>Method Type *</label>
+                            <div class="custom-radio">
+                                <input type="radio" id="type-qr" name="method_type" value="qr" checked>
+                                <label for="type-qr">QR Code Image</label>
+                            </div>
+                            <div class="custom-radio">
+                                <input type="radio" id="type-text" name="method_type" value="text">
+                                <label for="type-text">Account/IBAN Number</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="payment-method-details">Details *</label>
+                            <input type="text" id="payment-method-details" placeholder="Enter QR Code Image URL or Account Number" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="payment-method-logo">Company Logo URL</label>
+                            <input type="url" id="payment-method-logo" placeholder="e.g., https://example.com/easypaisa.png">
+                            <small>Optional. Use a square logo for best results.</small>
+                        </div>
+                         <div class="form-group">
+                            <label for="payment-method-note">Note for Customer (Optional)</label>
+                            <textarea id="payment-method-note" rows="3" placeholder="e.g., After paying, please upload the screenshot..."></textarea>
+                        </div>
+                        <div class="toggle-container">
+                            <span>Enable this method</span>
+                            <label class="toggle-switch"><input type="checkbox" id="payment-method-enabled" checked><span class="slider"></span></label>
+                        </div>
+                        <button type="submit" class="btn">Save Method</button>
+                        <button type="button" class="btn btn-warning" id="clear-payment-method-form">Clear Form</button>
+                    </form>
+                </div>
+                <div class="admin-card">
+                    <h2><i class="fas fa-credit-card"></i>Manage Payment Methods</h2>
+                    <div class="table-responsive">
+                        <table class="payment-methods-list">
+                            <thead><tr><th>Logo</th><th>Name</th><th>Owner</th><th>Type</th><th>Enabled</th><th>Actions</th></tr></thead>
+                            <tbody id="payment-methods-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="website-theme-tab" class="tab-content">
+                <div class="admin-card">
+                    <h2><i class="fas fa-ad"></i>Top Bar Banner (Marquee)</h2>
+                    <div class="toggle-container"><span>Enable Banner</span><label class="toggle-switch"><input type="checkbox" id="marquee-enabled"><span class="slider"></span></label></div>
+                    <div class="form-group"><label for="marquee-text">Banner Text</label><input type="text" id="marquee-text"></div>
+                    <div class="form-group">
+                        <label>Colors</label>
+                        <div style="display:flex; gap: 20px;">
+                            <div><label>Background:</label><div class="color-picker-wrapper"><input type="color" id="marquee-bg-color" value="#c89b3c"></div></div>
+                            <div><label>Text:</label><div class="color-picker-wrapper"><input type="color" id="marquee-text-color" value="#0a0a0a"></div></div>
+                        </div>
+                    </div>
+                    <button class="btn" id="save-marquee-settings">Save Banner</button>
+                </div>
+                <div class="admin-card">
+                    <h2><i class="fas fa-paint-roller"></i>Background Style</h2>
+                    <div class="form-group" id="background-type-selector">
+                        <div class="custom-radio"><input type="radio" id="bg-type-3d" name="bg_type" value="3d" checked><label for="bg-type-3d">3D Animated</label></div>
+                        <div class="custom-radio"><input type="radio" id="bg-type-gradient" name="bg_type" value="gradient"><label for="bg-type-gradient">Static Gradient</label></div>
+                        <div class="custom-radio"><input type="radio" id="bg-type-solid" name="bg_type" value="solid"><label for="bg-type-solid">Solid Color</label></div>
+                    </div>
+            
+                    <div id="bg-options-3d" class="background-options active">
+                        <div class="form-group">
+                            <label for="background-theme-select">Select 3D Animation</label>
+                            <select id="background-theme-select" class="form-control">
+                                <option value="stardust">Stardust</option><option value="nebula">Nebula</option><option value="galaxy">Galaxy</option><option value="sunburst">Sunburst</option><option value="emerald_mist">Emerald Mist</option><option value="ruby_glow">Ruby Glow</option><option value="ocean_deep">Ocean Deep</option><option value="monochrome">Monochrome</option><option value="autumn">Autumn</option><option value="aurora">Aurora</option><option value="waves">Starfield</option><option value="flowers">Flowers</option><option value="redrose">Red Rose</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="bg-options-gradient" class="background-options">
+                        <div class="form-group gradient-picker">
+                            <div>
+                                <label>Color 1</label>
+                                <div class="color-picker-wrapper" style="background-color: #ff0000;"><input type="color" id="bg-gradient-color1" value="#ff0000"></div>
+                            </div>
+                            <div>
+                                <label>Color 2</label>
+                                <div class="color-picker-wrapper" style="background-color: #0000ff;"><input type="color" id="bg-gradient-color2" value="#0000ff"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="bg-options-solid" class="background-options">
+                        <div class="form-group">
+                            <label>Color</label>
+                            <div class="color-picker-wrapper" style="background-color: #2c3e50;"><input type="color" id="bg-solid-color" value="#2c3e50"></div>
+                        </div>
+                    </div>
+                    <button class="btn" id="save-background-style">Save Background</button>
+                </div>
+
+                <div class="admin-card">
+                    <h2><i class="fas fa-palette"></i>Color Theme</h2>
+                     <div class="form-group">
+                        <label>Theme Choice</label>
+                        <div class="custom-radio"><input type="radio" id="theme-choice-preset" name="theme_choice" value="preset" checked><label for="theme-choice-preset">Use Preset Theme</label></div>
+                        <div class="custom-radio"><input type="radio" id="theme-choice-manual" name="theme_choice" value="manual"><label for="theme-choice-manual">Use Manual Colors</label></div>
+                    </div>
+                    <div id="theme-selector" class="theme-selector"></div>
+                    <div id="manual-theme-editor" class="manual-theme-editor">
+                        <h3>Global Colors</h3>
+                        <div class="form-group color-picker-group"><label>Accent Color</label><div class="color-picker-wrapper"><input type="color" data-var="--accent" value="#c89b3c"></div></div>
+                        <div class="form-group color-picker-group"><label>Accent Secondary</label><div class="color-picker-wrapper"><input type="color" data-var="--accent-secondary" value="#785a28"></div></div>
+                        <h3>Dark Theme Colors</h3>
+                        <div class="form-group color-picker-group"><label>Primary BG</label><div class="color-picker-wrapper"><input type="color" data-var="--primary-dark-bg" value="#0a0a0a"></div></div>
+                        <div class="form-group color-picker-group"><label>Secondary BG (Cards)</label><div class="color-picker-wrapper"><input type="color" data-var="--secondary-dark-bg" value="#1a1a1a"></div></div>
+                        <div class="form-group color-picker-group"><label>Text on Dark</label><div class="color-picker-wrapper"><input type="color" data-var="--text-on-dark" value="#f0f0f0"></div></div>
+                        <h3>Light Theme Colors</h3>
+                        <div class="form-group color-picker-group"><label>Primary BG</label><div class="color-picker-wrapper"><input type="color" data-var="--primary-light-bg" value="#ffffff"></div></div>
+                        <div class="form-group color-picker-group"><label>Secondary BG (Cards)</label><div class="color-picker-wrapper"><input type="color" data-var="--secondary-light-bg" value="#f5f5f5"></div></div>
+                        <div class="form-group color-picker-group"><label>Text on Light</label><div class="color-picker-wrapper"><input type="color" data-var="--text-on-light" value="#333333"></div></div>
+                    </div>
+                    <button class="btn" id="save-theme-settings" style="margin-top:15px;">Save Theme</button>
+                </div>
+            </div>
+            
+            <div id="admin-appearance-tab" class="tab-content">
+                 <div class="admin-card">
+                    <h2><i class="fas fa-swatchbook"></i>Admin Panel Theme</h2>
+                    <p>Choose a preset theme for your admin panel. Changes are previewed live. Click "Save Preferences" below to keep them.</p>
+                    <div id="admin-theme-selector" class="theme-selector"></div>
+                </div>
+                 <div class="admin-card">
+                    <h2><i class="fas fa-palette"></i>Admin Custom Colors</h2>
+                    <p>Override the preset theme colors with your own choices. These are also previewed live.</p>
+                    <div id="admin-manual-theme-editor" class="manual-theme-editor active">
+                        <h3>General</h3>
+                        <div class="form-group color-picker-group"><label>Primary</label><div class="color-picker-wrapper"><input type="color" data-var="--primary" value="#2c3e50"></div></div>
+                        <div class="form-group color-picker-group"><label>Secondary</label><div class="color-picker-wrapper"><input type="color" data-var="--secondary" value="#e74c3c"></div></div>
+                        <div class="form-group color-picker-group"><label>Accent</label><div class="color-picker-wrapper"><input type="color" data-var="--accent" value="#3498db"></div></div>
+                        <div class="form-group color-picker-group"><label>Gold Highlight</label><div class="color-picker-wrapper"><input type="color" data-var="--gold" value="#ffd700"></div></div>
+                        <h3>Dark Mode</h3>
+                        <div class="form-group color-picker-group"><label>Background</label><div class="color-picker-wrapper"><input type="color" data-var="--dark-bg" value="#222b3c"></div></div>
+                        <div class="form-group color-picker-group"><label>Cards</label><div class="color-picker-wrapper"><input type="color" data-var="--dark-card" value="#2c3a4f"></div></div>
+                        <div class="form-group color-picker-group"><label>Text</label><div class="color-picker-wrapper"><input type="color" data-var="--dark-text" value="#ecf0f1"></div></div>
+                        <div class="form-group color-picker-group"><label>Borders</label><div class="color-picker-wrapper"><input type="color" data-var="--dark-border" value="#4a5a70"></div></div>
+                    </div>
+                </div>
+                <div class="admin-card">
+                    <h2><i class="fas fa-save"></i>Actions</h2>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                         <button class="btn btn-success" id="save-admin-theme-btn"><i class="fas fa-save"></i> Save Preferences</button>
+                         <button class="btn btn-warning" id="reset-admin-theme-btn"><i class="fas fa-undo"></i> Reset to Default</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="backup-restore-tab" class="tab-content">
+                 <div class="admin-card">
+                    <h2><i class="fas fa-download"></i>Backup Data</h2>
+                    <p>Download a JSON file containing all your website data.</p>
+                    <button class="btn btn-info" id="backupBtn"><i class="fas fa-download"></i> Backup All Data</button>
+                </div>
+                 <div class="admin-card">
+                    <h2><i class="fas fa-upload"></i>Restore Data</h2>
+                    <p style="color: var(--secondary); font-weight: bold;">WARNING: Restoring will overwrite all existing data.</p>
+                    <div class="form-group">
+                        <label for="restore-file-input">Select Backup JSON File</label>
+                        <input type="file" id="restore-file-input" accept=".json" class="form-control" style="padding: 10px;">
+                    </div>
+                    <button class="btn btn-danger" id="restoreBtn"><i class="fas fa-upload"></i> Restore Data</button>
+                </div>
+            </div>
+
+            <div id="delivery-fee-tab" class="tab-content">
+                <div class="admin-card">
+                    <h2><i class="fas fa-truck"></i>Delivery Fee Rules</h2>
+                    <div id="delivery-rules-container"></div>
+                    <button class="btn btn-info" id="add-delivery-rule-btn"><i class="fas fa-plus"></i> Add Rule</button>
+                    <button class="btn" id="save-delivery-rules-btn">Save Rules</button>
+                </div>
+            </div>
+
+            <div id="site-settings-tab" class="tab-content">
+                <div class="admin-card">
+                    <h2><i class="fas fa-info-circle"></i>Edit About Section</h2>
+                    <div class="form-group"><label for="about-content-editor">Content</label><textarea id="about-content-editor" class="form-control" rows="8"></textarea></div>
+                    <button class="btn" id="save-about-content">Save About Content</button>
+                </div>
+                <div class="admin-card">
+                    <h2><i class="fas fa-toggle-on"></i>Section Visibility</h2>
+                    <div class="toggle-container"><span>About Section</span><label class="toggle-switch"><input type="checkbox" id="toggle-about" checked><span class="slider"></span></label></div>
+                    <div class="toggle-container"><span>Contact Section</span><label class="toggle-switch"><input type="checkbox" id="toggle-contact" checked><span class="slider"></span></label></div>
+                    <button class="btn" id="save-visibility">Save Visibility</button>
+                </div>
+                <div class="admin-card">
+                    <h2><i class="fas fa-address-book"></i>Contact Information</h2>
+                    <form id="contact-info-form">
+                        <div class="form-group"><label for="contact-email">Email</label><input type="email" id="contact-email"></div>
+                        <div class="form-group"><label for="contact-phone">Phone</label><input type="tel" id="contact-phone"></div>
+                        <div class="form-group"><label for="contact-address">Address</label><textarea id="contact-address" rows="2"></textarea></div>
+                        <div class="form-group"><label for="contact-copyright">Footer Copyright Text</label><input type="text" id="contact-copyright" placeholder="&copy; 2025 Arrty Trails. All rights reserved."></div>   
+                        <button type="submit" class="btn">Save Contact</button>
+                    </form>
+                </div>
+                <div class="admin-card">
+                    <h2><i class="fas fa-share-alt"></i>Social Media Links</h2>
+                    <form id="social-links-form">
+                        <div class="social-input-group"><i class="fab fa-instagram"></i><input type="url" id="social-ig" placeholder="Instagram URL"></div>
+                        <div class="social-input-group"><i class="fab fa-facebook-f"></i><input type="url" id="social-fb" placeholder="Facebook URL"></div>
+                        <button type="submit" class="btn">Save Socials</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="receipt-settings-tab" class="tab-content">
+                <div class="admin-card">
+                    <h2><i class="fas fa-receipt"></i>Receipt Customization</h2>
+                    <form id="receipt-settings-form">
+                        <div class="form-group"><label for="receipt-logo">Company Logo URL</label><input type="url" id="receipt-logo" placeholder="../example.com/logo.html"></div>
+                        <div class="form-group"><label for="receipt-company">Company Name</label><input type="text" id="receipt-company"></div>
+                        <div class="form-group"><label for="receipt-address">Company Address</label><textarea id="receipt-address" rows="2"></textarea></div>
+                        <div class="form-group"><label for="receipt-contact">Contact Info</label><textarea id="receipt-contact" rows="2"></textarea></div>
+                        <div class="form-group"><label for="receipt-footer">Footer Text</label><textarea id="receipt-footer" rows="2"></textarea></div>
+                        <button type="submit" class="btn">Save Settings</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="policy-settings-tab" class="tab-content">
+                <div class="admin-card"><h2><i class="fas fa-shipping-fast"></i>Shipping Policy</h2><form id="shipping-policy-form"><div class="form-group"><textarea id="shipping-policy" rows="10"></textarea></div><button type="submit" class="btn">Save</button></form></div>
+                <div class="admin-card"><h2><i class="fas fa-question-circle"></i>FAQ</h2><form id="faq-form"><div class="form-group"><textarea id="faq-content" rows="10"></textarea></div><button type="submit" class="btn">Save</button></form></div>
+                <div class="admin-card"><h2><i class="fas fa-file-contract"></i>Terms & Conditions</h2><form id="terms-form"><div class="form-group"><textarea id="terms-content" rows="10"></textarea></div><button type="submit" class="btn">Save</button></form></div>
+                <div class="admin-card"><h2><i class="fas fa-user-shield"></i>Privacy Policy</h2><form id="privacy-form"><div class="form-group"><textarea id="privacy-content" rows="10"></textarea></div><button type="submit" class="btn">Save</button></form></div>
+            </div>
+            
+            <div id="custom-sections-tab" class="tab-content">
+                 <div class="admin-card">
+                    <h2><i class="fas fa-puzzle-piece"></i>Manage Custom Sections</h2>
+                    <div id="custom-sections-list" style="margin-top:20px;"></div>
+                    <button class="btn" id="add-new-section-btn" style="margin-top:20px;"><i class="fas fa-plus"></i> Add New Section</button>
+                </div>
+            </div>
+
+            <div id="account-settings-tab" class="tab-content">
+                <div class="admin-card">
+                    <h2><i class="fas fa-key"></i> Update Login Credentials</h2>
+                    <p style="margin-bottom: 15px; color: var(--secondary); font-size: 0.85em;">Note: Changing these will take effect instantly in Firebase.</p>
+                    
+                    <div class="form-group">
+                        <label>Current Password * <small style="color: var(--secondary);">(Required to verify it's you)</small></label>
+                        <input type="password" id="current-admin-password" placeholder="Enter your current password">
+                    </div>
+
+                    <div class="form-group">
+                        <label>New Admin Email</label>
+                        <input type="email" id="new-admin-email" placeholder="Enter new email address (optional)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input type="password" id="new-admin-password" placeholder="Enter new password (min 6 characters, optional)">
+                    </div>
+                    
+                    <button class="btn btn-info" onclick="updateAdminCredentials()">Update Credentials</button>
+                </div>
+
+                <div class="admin-card">
+                    <h2><i class="fas fa-shield-alt"></i> Two-Factor Authentication Setup</h2>
+                    
+                    <div class="toggle-container" style="background: rgba(0,0,0,0.03); padding: 15px; border-radius: 8px;">
+                        <span style="font-weight: bold;">Enable Admin PIN</span>
+                        <label class="toggle-switch"><input type="checkbox" id="toggle-admin-pin"><span class="slider"></span></label>
+                    </div>
+                    <div class="form-group" id="pin-setup-group" style="margin-top: 10px; padding: 0 15px;">
+                        <label>Set your Admin PIN</label>
+                        <input type="password" id="admin-pin-input" placeholder="e.g., 1234">
+                    </div>
+
+                    <div class="toggle-container" style="background: rgba(0,0,0,0.03); padding: 15px; border-radius: 8px; margin-top: 20px;">
+                        <span style="font-weight: bold;">Enable Email OTP</span>
+                        <label class="toggle-switch"><input type="checkbox" id="toggle-email-otp"><span class="slider"></span></label>
+                    </div>
+                    <div class="form-group" id="otp-setup-group" style="margin-top: 10px; padding: 0 15px;">
+                        <label>Secondary / Backup Email for OTP</label>
+                        <input type="email" id="secondary-otp-email" placeholder="Defaults to main admin email if empty">
+                        <small style="display:block; margin-top:5px; color:#666;">System will send a 6-digit code here upon login.</small>
+                    </div>
+
+                    <button class="btn btn-success" style="margin-top: 20px;" onclick="save2FASettings()">Save 2FA Settings</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal" id="edit-artwork-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Edit Artwork</h2><button class="modal-close" onclick="closeModal('edit-artwork-modal')">&times;</button></div>
+            <form id="edit-artwork-form">
+                <input type="hidden" id="edit-artwork-id">
+                <div class="form-group"><label for="edit-title">Title *</label><input type="text" id="edit-title" required></div>
+                <div class="form-group"><label for="edit-artist">Artist *</label><input type="text" id="edit-artist" required></div>
+                <div class="form-group"><label for="edit-imageUrls">Image URLs *</label><textarea id="edit-imageUrls" required></textarea></div>
+                
+                <div class="form-group" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label for="edit-price">Original Price (PKR) *</label>
+                        <input type="number" id="edit-price" min="0" step="0.01" required>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label for="edit-discountPrice" style="color: var(--secondary);">Discounted Price (Optional)</label>
+                        <input type="number" id="edit-discountPrice" class="discount-input" min="0" step="0.01" placeholder="Empty to remove discount">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label for="edit-stock">Pieces Left (Stock)</label>
+                        <input type="number" id="edit-stock" placeholder="e.g. 10">
+                    </div>
+                </div>
+
+                <div class="form-group" style="background: rgba(0,0,0,0.02); padding: 15px; border: 1px dashed var(--dark-border); border-radius: 8px;">
+                    <label>Product Sizes & Prices</label>
+                    <div id="edit-size-rows-container"></div>
+                    <button type="button" class="btn btn-info" onclick="addSizeRow('edit-size-rows-container')" style="margin-top:10px; font-size: 0.8rem;">+ Add Size Variant</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Availability Status</label>
+                    <select id="edit-availability">
+                        <option value="available">Available</option>
+                        <option value="sold_out">Sold Out</option>
+                        <option value="unavailable">Hidden</option>
+                    </select>
+                </div>
+
+                <div class="form-group"><label for="edit-category">Category *</label><select id="edit-category" required><option value="Paintings">Paintings</option><option value="Bracelets">Bracelets</option><option value="Bouquets">Bouquets</option><option value="Cards">Cards</option><option value="Gift Boxes">Gift Boxes</option><option value="Other Creations">Other Creations</option></select></div>
+                <div class="form-group"><label for="edit-description">Description</label><textarea id="edit-description"></textarea></div>
+                <button type="submit" class="btn">Update Artwork</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="modal" id="view-order-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Order Details</h2>
+                <button class="modal-close" onclick="closeModal('view-order-modal')">&times;</button>
+            </div>
+            <div id="order-modal-body">
+                <h3>Order Information</h3>
+                <p><strong>Order ID:</strong> <span id="view-order-id"></span></p>
+                <p><strong>Date:</strong> <span id="view-order-date"></span></p>
+                <p>
+                    <strong>Order Status:</strong>
+                    <span class="status-select-wrapper">
+                        <select id="order-status-select">
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="prepared">Prepared</option>
+                            <option value="finalization">Finalization</option>
+                            <option value="delivery">Out for Delivery</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </span>
+                </p>
+                <h3 style="margin-top: 20px;">Order Items</h3>
+                <div id="view-order-items" class="order-items-container"></div>
+                <h3 style="margin-top: 20px;">Customer Information</h3>
+                <p><strong>Name:</strong> <span id="view-customer-name"></span></p><p><strong>Email:</strong> <span id="view-customer-email"></span></p><p><strong>Phone:</strong> <span id="view-customer-phone"></span></p><p><strong>Address:</strong> <span id="view-customer-address"></span></p>
+                
+                <div id="payment-proof-section" class="payment-proof-container" style="display: none;">
+                    <h3><i class="fas fa-receipt"></i> Payment Slip Details</h3>
+                    <div class="payment-proof-details">
+                        <p><strong>Transaction PID:</strong> <span id="proof-pid" style="color: var(--accent); font-family: monospace; font-weight: bold;"></span></p>
+                        <p><strong>Payment Method:</strong> <span id="proof-method"></span></p>
+                        <p><strong>Sender Name:</strong> <span id="proof-sender-name"></span></p>
+                        <p><strong>Sender Number:</strong> <span id="proof-sender-number"></span></p>
+                        <p><strong>Submitted At:</strong> <span id="proof-submitted-at"></span></p>
+                        <div class="payment-proof-screenshot">
+                            <strong>Screenshot:</strong><br>
+                            <a href="#" id="proof-screenshot-link" target="_blank" rel="noopener noreferrer">
+                                <img src="#" id="proof-screenshot-img" alt="Payment Screenshot">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="modal-actions">
+                <button class="btn btn-info" id="update-order-status-btn">Update Order Status</button>
+                <button class="btn btn-success" id="confirm-payment-btn" style="display: none;">
+                    <i class="fas fa-check-circle"></i> Confirm Payment
+                </button>
+                <button class="btn btn-warning" id="export-html-btn"><i class="fas fa-file-code"></i> Export HTML</button>
+                <button class="btn btn-danger" id="export-pdf-btn"><i class="fas fa-file-pdf"></i> Export PDF</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="bulk-edit-artwork-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Bulk Edit Artworks</h2><button class="modal-close" onclick="closeModal('bulk-edit-artwork-modal')">&times;</button></div>
+            <form id="bulk-edit-artwork-form">
+                <div class="form-group"><label for="bulk-edit-title">Title</label><input type="text" id="bulk-edit-title" placeholder="Leave blank for no change"></div>
+                <div class="form-group"><label for="bulk-edit-description">Description</label><textarea id="bulk-edit-description" placeholder="Leave blank for no change" rows="4"></textarea></div>
+                <div class="form-group"><label for="bulk-edit-category">Category</label><select id="bulk-edit-category"><option value="">-- No Change --</option><option value="Paintings">Paintings</option><option value="Bracelets">Bracelets</option><option value="Bouquets">Bouquets</option><option value="Cards">Cards</option><option value="Gift Boxes">Gift Boxes</option><option value="Other Creations">Other Creations</option></select></div>
+                <div class="form-group"><label for="bulk-edit-artist">Artist</label><input type="text" id="bulk-edit-artist" placeholder="Leave blank for no change"></div>
+                <div class="form-group"><label>Price Adjustment</label><div style="display:flex; gap:10px;"><select id="bulk-price-op" style="width:150px;"><option value="">-- No Change --</option><option value="increase_percent">Increase by %</option><option value="decrease_percent">Decrease by %</option><option value="set_fixed">Set new price</option></select><input type="number" id="bulk-price-value" step="any" placeholder="Value"></div></div>
+                <button type="submit" class="btn">Apply Changes</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="modal" id="section-editor-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Section Editor</h2><button class="modal-close" onclick="closeModal('section-editor-modal')">&times;</button></div>
+            <form id="section-editor-form">
+                <input type="hidden" id="section-id-input">
+                <div class="form-group"><label for="section-title">Title</label><input type="text" id="section-title" required></div>
+                <div class="form-group"><label for="section-order">Order</label><input type="number" id="section-order" value="10"></div>
+                <div class="toggle-container"><span>Enabled</span><label class="toggle-switch"><input type="checkbox" id="section-enabled" checked><span class="slider"></span></label></div>
+                <div class="form-group"><label for="section-html">HTML</label><textarea id="section-html" class="code-editor" rows="8"></textarea></div>
+                <div class="form-group"><label for="section-css">CSS (optional)</label><textarea id="section-css" class="code-editor" rows="5"></textarea></div>
+                <div class="form-group"><label for="section-js">JavaScript (optional)</label><textarea id="section-js" class="code-editor" rows="5"></textarea></div>
+                <button type="submit" class="btn">Save Section</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="modal" id="image-viewer-modal" style="justify-content: center; align-items: center; z-index: 1001;">
+        <span class="modal-close" id="image-viewer-close" style="position:absolute; top: 20px; right: 35px; color: #fff; font-size: 40px; font-weight: bold; cursor:pointer;">&times;</span>
+        <img id="full-size-image" style="max-width: 90%; max-height: 90vh; display:block;">
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    
+    <script>
+        console.log("Starting Admin Panel Script...");
+        const firebaseConfig = { apiKey: "AIzaSyA4x1fNeC6r6znsm_HMJU1sJTVjeyIIIZU", authDomain: "zoyearrtyweb.firebaseapp.com", projectId: "zoyearrtyweb", storageBucket: "zoyearrtyweb.appspot.com", messagingSenderId: "1033442222787", appId: "1:1033442222787:web:cf008858fd8f3309f87876" };
+        
+        if (typeof firebase === 'undefined') {
+            alert("Error: Firebase failed to load. Please check your internet connection.");
+        } else {
+            firebase.initializeApp(firebaseConfig);
+            console.log("Firebase initialized.");
+        }
+
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        
+        let selectedArtworks = new Set();
+        let selectedOrders = new Set();
+        let isPanelInitialized = false;
+        let pendingAdminTheme = {};
+        let currentOrderForExport = null;
+
+        // --- CORE INITIALIZATION, TAB MEMORY & 2FA LOGIN SYSTEM ---
+        let currentSecurityData = null;
+        let expectedOTP = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            auth.onAuthStateChanged(async user => {
+                // Hide global loader smoothly
+                setTimeout(() => { 
+                    const loader = document.getElementById('global-loader');
+                    if(loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 400); }
+                }, 500);
+
+                if (user) {
+                    try {
+                        // SMART ADMIN CHECK: Will instantly throw error if user UID is not in Firebase Rules!
+                        const secDoc = await db.collection('adminSettings').doc('security').get();
+                        currentSecurityData = secDoc.exists ? secDoc.data() : null;
+
+                        // Verified Admin! Move to 2FA
+                        if (currentSecurityData && (currentSecurityData.pinEnabled || currentSecurityData.otpEnabled) && !sessionStorage.getItem('2faPassed')) {
+                            document.getElementById('login-screen').classList.add('show');
+                            document.getElementById('login-form').style.display = 'none';
+                            document.getElementById('two-factor-screen').style.display = 'block';
+                            
+                            let msg = "";
+                            if (currentSecurityData.pinEnabled) {
+                                document.getElementById('pin-input-group').style.display = 'block';
+                                msg += "PIN Required. ";
+                            } else { document.getElementById('pin-input-group').style.display = 'none'; }
+
+                            if (currentSecurityData.otpEnabled) {
+                                document.getElementById('otp-input-group').style.display = 'block';
+                                expectedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+                                const targetEmail = currentSecurityData.secondaryEmail || user.email;
+                                msg += `OTP sent to ${targetEmail}.`;
+                                sendOTP(expectedOTP, targetEmail);
+                            } else { document.getElementById('otp-input-group').style.display = 'none'; }
+                            
+                            document.getElementById('two-factor-msg').textContent = msg;
+                        } else {
+                            completeLoginFlow(user);
+                        }
+                    } catch(e) {
+                        console.warn("Access Denied: Not an authorized Admin UID.");
+                        auth.signOut();
+                        showLoginScreen();
+                    }
+                } else {
+                    showLoginScreen();
+                }
+            });
+            
+            document.getElementById('login-form').addEventListener('submit', e => {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                auth.signInWithEmailAndPassword(email, password).catch((err) => {
+                    console.error(err);
+                    document.getElementById('login-error').style.display = 'block';
+                });
+            });
+        });
+
+        function showLoginScreen() {
+            document.getElementById('login-screen').classList.add('show'); 
+            document.getElementById('admin-content').classList.remove('active');
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('two-factor-screen').style.display = 'none';
+            sessionStorage.removeItem('2faPassed');
+        }
+
+        function completeLoginFlow(user = auth.currentUser) {
+            sessionStorage.setItem('2faPassed', 'true');
+            document.getElementById('login-screen').classList.remove('show'); 
+            document.getElementById('admin-content').classList.add('active'); 
+            initAdminPanel();
+
+            if (user && !sessionStorage.getItem('loginTracked')) {
+                trackAdminLogin(user);
+            }
+        }
+
+        function logout() { auth.signOut(); sessionStorage.clear(); window.location.reload(); }
+
+        function showStatus(msg, type) {
+            const el = document.getElementById('status-message');
+            el.textContent = msg;
+            el.className = `status-message ${type}`;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 5000);
+        }
+
+        function openModal(modalId) { document.getElementById(modalId).style.display = 'flex'; }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+
+        async function safeLoad(fn) {
+            try { await fn(); } catch(e) { console.error(`Failed to load ${fn.name}:`, e); }
+        }
+
+        function initAdminPanel() {
+            if (isPanelInitialized) return;
+            isPanelInitialized = true;
+            
+            try { 
+                const safeName = auth.currentUser.email ? auth.currentUser.email.split('@')[0] : 'Admin';
+                document.getElementById('admin-name').textContent = safeName;
+            } catch(e) {}
+            
+            safeLoad(setupTabs);
+            safeLoad(setupEventListeners);
+            safeLoad(loadDashboard);
+            safeLoad(loadArtworks);
+            safeLoad(loadOrders);
+            safeLoad(loadCoupons);
+            safeLoad(loadPaymentMethods);
+            safeLoad(loadWebsiteTheme);
+            safeLoad(loadDeliveryFee);
+            safeLoad(loadSiteSettings);
+            safeLoad(loadReceiptSettings);
+            safeLoad(loadPolicySettings);
+            safeLoad(loadCustomSections);
+            safeLoad(loadAdminTheme);
+            safeLoad(loadHistory); 
+            safeLoad(loadLoginHistory);
+            safeLoad(load2FASettingsUI);
+        }
+
+        // --- AUDIT SYSTEM WITH ADMIN EMAIL TRACKING ---
+        async function logAction(action, collection, docId, oldData, newData, description) {
+            const adminEmail = auth.currentUser ? auth.currentUser.email : "System"; 
+            try {
+                const sanitize = (data) => {
+                    if (!data) return null;
+                    let clean = { ...data };
+                    for (let key in clean) { if (clean[key] && typeof clean[key] === 'object' && typeof clean[key].toMillis === 'function') clean[key] = clean[key].toMillis(); }
+                    return JSON.stringify(clean);
+                };
+
+                await db.collection('adminHistory').add({
+                    action: action,
+                    collection: collection,
+                    docId: docId,
+                    adminEmail: adminEmail, 
+                    oldData: sanitize(oldData),
+                    newData: sanitize(newData),
+                    description: description || "No details",
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    expiresAt: Date.now() + (24 * 60 * 60 * 1000) 
+                });
+                
+                const historyTab = document.getElementById('account-history-tab');
+                if(historyTab && historyTab.classList.contains('active')) loadHistory();
+            } catch (e) { console.error("Logging failed", e); }
+        }
+
+        function loadHistory() {
+            const feed = document.getElementById('history-feed');
+            feed.innerHTML = '<p style="text-align:center;">Loading history...</p>';
+            
+            db.collection('adminHistory').orderBy('timestamp', 'desc').limit(50).get()
+            .then(snap => {
+                feed.innerHTML = '';
+                if(snap.empty) { feed.innerHTML = '<p style="text-align:center;">No history records found.</p>'; return; }
+                
+                snap.forEach(doc => {
+                    const h = doc.data();
+                    const time = h.timestamp ? new Date(h.timestamp.toDate()).toLocaleString() : 'Just now';
+                    const isExpired = (h.expiresAt - Date.now()) < 0;
+                    const adminBadge = h.adminEmail ? `<span style="background: rgba(52, 152, 219, 0.1); color: #2980b9; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; margin-left: 10px; border: 1px solid rgba(52, 152, 219, 0.3);"><i class="fas fa-user-shield"></i> ${h.adminEmail}</span>` : '';
+                    
+                    let actionButton = '';
+                    if (h.action === 'delete') {
+                        if (!isExpired) {
+                            const hoursLeft = Math.ceil((h.expiresAt - Date.now()) / (1000 * 60 * 60));
+                            actionButton = `<span class="revert-timer"><i class="fas fa-clock"></i> ${hoursLeft}h left</span> <button class="btn btn-warning" style="padding:5px 10px; font-size:0.8rem;" onclick="revertAction('${doc.id}')">RESTORE</button>`;
+                        } else { actionButton = `<span style="color:red; font-weight:bold; font-size:0.8rem;">Permanently Deleted</span>`; }
+                    } else {
+                        actionButton = `<button class="btn btn-info" style="padding:5px 10px; font-size:0.8rem;" onclick="revertAction('${doc.id}')">REVERT</button>`;
+                    }
+
+                    const div = document.createElement('div');
+                    div.className = `history-item ${h.action === 'delete' ? 'delete-action' : ''}`;
+                    div.innerHTML = `
+                        <div class="history-meta">
+                            <span style="display: flex; align-items: center;"><strong>${h.action.toUpperCase()}</strong> on ${h.collection} (${h.docId}) ${adminBadge}</span>
+                            <span style="font-size:0.8rem;">${time}</span>
+                        </div>
+                        <div class="history-changes">${h.description || 'No details'}</div>
+                        <div style="text-align:right; margin-top:5px;">${actionButton}</div>
+                    `;
+                    feed.appendChild(div);
+                });
+            })
+            .catch(err => { feed.innerHTML = `<div style="text-align:center; color:red;"><p>Error loading history.</p></div>`; });
+        }
+
+        async function revertAction(historyId) {
+            if (!confirm("Are you sure you want to revert this action?")) return;
+            try {
+                const doc = await db.collection('adminHistory').doc(historyId).get();
+                if (!doc.exists) return showStatus("History record not found.", "error");
+                const h = doc.data();
+                
+                let oldData = null;
+                try { 
+                    oldData = h.oldData ? JSON.parse(h.oldData) : null; 
+                    if (oldData) {
+                        oldData.createdAt = oldData.createdAt 
+                            ? firebase.firestore.Timestamp.fromMillis(oldData.createdAt) 
+                            : firebase.firestore.FieldValue.serverTimestamp();
+                    }
+                } catch(e) {}
+
+                if (h.action === 'delete') {
+                    if (h.expiresAt < Date.now()) return showStatus("Restore period expired.", "error");
+                    if (oldData) {
+                        await db.collection(h.collection).doc(h.docId).set(oldData);
+                        showStatus("Item restored successfully!", "success");
+                    } else { showStatus("Cannot restore: Backup data missing.", "error"); }
+                } else if (h.action === 'update' || h.action === 'edit') {
+                    if (oldData) {
+                        await db.collection(h.collection).doc(h.docId).set(oldData);
+                        showStatus("Changes reverted!", "success");
+                    }
+                } else if (h.action === 'create') {
+                    await db.collection(h.collection).doc(h.docId).delete();
+                    showStatus("Creation undone!", "success");
+                }
+                
+                await db.collection('adminHistory').doc(historyId).update({ action: 'reverted' });
+
+                loadHistory(); 
+                if (h.collection === 'artworks') loadArtworks(); 
+                if (h.collection === 'orders') loadOrders();
+                if (h.collection === 'coupons') loadCoupons();
+                if (h.collection === 'paymentMethods') loadPaymentMethods();
+                if (h.collection === 'customSections') loadCustomSections();
+            } catch (e) { showStatus("Revert failed: " + e.message, "error"); }
+        }
+
+      // --- NEW: LOGIN HISTORY TRACKING (NETLIFY / CORS-SAFE VERSION) ---
+async function trackAdminLogin(user) {
+    try {
+        const browserInfo = navigator.userAgent;
+        let locationString = "Unknown Location";
+        
+        try {
+            // API 1: ipwho.is (No CORS issues, extremely reliable)
+            const res = await fetch('https://ipwho.is/');
+            const data = await res.json();
+            
+            if (data.success && data.city && data.country) {
+                locationString = `${data.city}, ${data.country}`;
+            } else {
+                throw new Error("Primary API failed, switching to backup.");
+            }
+        } catch (err) {
+            try {
+                // API 2: GeoJS Backup (Also no CORS issues)
+                const res2 = await fetch('https://get.geojs.io/v1/ip/geo.json');
+                const data2 = await res2.json();
+                if (data2.city && data2.country) {
+                    locationString = `${data2.city}, ${data2.country}`;
+                }
+            } catch(err2) {
+                console.warn("Location tracking completely blocked by browser.");
+            }
+        }
+
+        console.log("Recorded Login Location:", locationString);
+
+        // Save everything to the database
+        await db.collection('loginHistory').add({
+            email: user.email,
+            uid: user.uid,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            device: browserInfo,
+            location: locationString // Saves the exact location!
+        });
+        
+        sessionStorage.setItem('loginTracked', 'true');
+    } catch(e) { 
+        console.error("Could not track login", e); 
+    }
+}
+        
+
+
+       function loadLoginHistory() {
+            const table = document.getElementById('login-history-table');
+            db.collection('loginHistory').orderBy('timestamp', 'desc').limit(50).get().then(snap => {
+                table.innerHTML = '';
+                if (snap.empty) { table.innerHTML = '<tr><td colspan="3">No logins found.</td></tr>'; return; }
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const time = d.timestamp ? d.timestamp.toDate().toLocaleString() : 'Just now';
+                    
+                    let device = "Unknown Device";
+                    if (d.device.includes("Win")) device = "Windows PC";
+                    if (d.device.includes("Mac")) device = "Mac";
+                    if (d.device.includes("iPhone") || d.device.includes("iPad")) device = "iOS Device";
+                    if (d.device.includes("Android")) device = "Android Device";
+                    
+                    table.innerHTML += `<tr><td>${time}</td><td><strong>${d.email}</strong></td><td style="font-size: 0.85em; color: var(--secondary);">${device} <br><span style="font-size: 0.8em; color: #888;">${d.device}</span></td></tr>`;
+                });
+            });
+        }
+        
+        // --- DASHBOARD ---
+        async function loadDashboard() {
+            const [artworksSnap, ordersSnap] = await Promise.all([db.collection('artworks').get(), db.collection('orders').get()]);
+            const orders = ordersSnap.docs.map(doc => ({id: doc.id, ...doc.data()}));
+            const totalRevenue = orders.reduce((sum, order) => sum + (order.grandTotal || 0), 0);
+            
+            document.getElementById('total-revenue').textContent = `PKR ${totalRevenue.toLocaleString()}`;
+            document.getElementById('total-artworks').textContent = artworksSnap.size;
+            document.getElementById('pending-orders').textContent = orders.filter(o => o.status === 'pending').length;
+            document.getElementById('avg-order-value').textContent = `PKR ${orders.length > 0 ? (totalRevenue / orders.length).toFixed(0) : '0'}`;
+            
+            document.getElementById('recent-orders-table').innerHTML = orders.sort((a,b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0)).slice(0, 5).map(o => `<tr><td>#${(o.orderId || o.id)}</td><td>${o.customerName}</td><td>PKR ${(o.grandTotal || 0).toLocaleString()}</td><td><span class="order-status status-${o.status}">${o.status}</span></td></tr>`).join('');
+            
+            const categories = artworksSnap.docs.map(d => d.data().category).filter(Boolean);
+            const counts = categories.reduce((acc, cat) => { acc[cat] = (acc[cat] || 0) + 1; return acc; }, {});
+            const max = Math.max(...Object.values(counts), 1);
+            document.getElementById('category-chart').innerHTML = Object.entries(counts).map(([cat, val]) => `<div class="bar" style="height:${(val/max)*100}%"><div class="bar-value">${val}</div><div class="bar-label">${cat}</div></div>`).join('');
+        }
+
+        // --- EVENT LISTENERS & TAB MEMORY ---
+        function setupTabs() {
+            document.querySelectorAll('.sidebar-menu a[data-tab]').forEach(link => {
+                link.addEventListener('click', e => {
+                    e.preventDefault();
+                    const tabId = link.dataset.tab;
+                    
+                    sessionStorage.setItem('activeAdminTab', tabId);
+
+                    document.getElementById('page-header-title').innerHTML = `${link.querySelector('i').outerHTML} ${link.querySelector('span')?.textContent || ''}`;
+                    document.querySelectorAll('.sidebar-menu a').forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                    
+                    if (tabId === 'account-history') loadHistory();
+                    if (tabId === 'account-settings') load2FASettingsUI();
+                    if (tabId === 'login-history') loadLoginHistory();
+                });
+            });
+
+            // Restore the tab on page refresh
+            const savedTab = sessionStorage.getItem('activeAdminTab') || 'dashboard';
+            const tabToClick = document.querySelector(`.sidebar-menu a[data-tab="${savedTab}"]`);
+            if (tabToClick) tabToClick.click();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('add-artwork-form').addEventListener('submit', addArtwork);
+            document.getElementById('edit-artwork-form').addEventListener('submit', updateArtwork);
+            document.getElementById('update-order-status-btn').addEventListener('click', updateOrderStatus);
+            document.getElementById('confirm-payment-btn').addEventListener('click', confirmPayment);
+            document.getElementById('contact-info-form').addEventListener('submit', saveContactInfo);
+            document.getElementById('social-links-form').addEventListener('submit', saveSocialLinks);
+            document.getElementById('receipt-settings-form').addEventListener('submit', saveReceiptSettings);
+            document.getElementById('save-visibility').addEventListener('click', saveVisibility);
+            document.getElementById('shipping-policy-form').addEventListener('submit', e => { e.preventDefault(); savePolicy('shippingPolicy', 'shipping-policy'); });
+            document.getElementById('faq-form').addEventListener('submit', e => { e.preventDefault(); savePolicy('faqPolicy', 'faq-content'); });
+            document.getElementById('terms-form').addEventListener('submit', e => { e.preventDefault(); savePolicy('termsPolicy', 'terms-content'); });
+            document.getElementById('privacy-form').addEventListener('submit', e => { e.preventDefault(); savePolicy('privacyPolicy', 'privacy-content'); });
+            document.getElementById('coupon-form').addEventListener('submit', saveCoupon);
+            document.getElementById('clear-coupon-form').addEventListener('click', clearCouponForm);
+            document.getElementById('payment-method-form').addEventListener('submit', savePaymentMethod);
+            document.getElementById('clear-payment-method-form').addEventListener('click', clearPaymentMethodForm);
+            document.getElementById('select-all-artworks').addEventListener('change', e => handleSelectAll('artworks', e.target.checked));
+            document.getElementById('select-all-orders').addEventListener('change', e => handleSelectAll('orders', e.target.checked));
+            document.getElementById('bulk-delete-artworks-btn').addEventListener('click', bulkDeleteArtworks);
+            document.getElementById('bulk-delete-orders-btn').addEventListener('click', bulkDeleteOrders);
+            document.getElementById('bulk-edit-artworks-btn').addEventListener('click', () => { if (selectedArtworks.size === 0) { showStatus('Please select artworks to edit.', 'info'); return; } openModal('bulk-edit-artwork-modal'); });
+            document.getElementById('bulk-edit-artwork-form').addEventListener('submit', handleBulkUpdate);
+            document.getElementById('save-marquee-settings').addEventListener('click', saveMarqueeSettings);
+            document.getElementById('add-delivery-rule-btn').addEventListener('click', () => addDeliveryRule());
+            document.getElementById('save-delivery-rules-btn').addEventListener('click', saveDeliveryRules);
+            document.getElementById('add-new-section-btn').addEventListener('click', () => openSectionEditor());
+            document.getElementById('section-editor-form').addEventListener('submit', saveSection);
+            document.getElementById('save-about-content').addEventListener('click', saveAboutContent);
+            document.getElementById('save-theme-settings').addEventListener('click', saveThemeSettings);
+            document.getElementById('save-background-style').addEventListener('click', saveBackgroundStyle);
+            document.querySelectorAll('input[name="theme_choice"]').forEach(radio => radio.addEventListener('change', toggleManualThemeEditor));
+            document.querySelectorAll('input[name="bg_type"]').forEach(radio => radio.addEventListener('change', toggleBackgroundOptions));
+            document.querySelectorAll('.color-picker-wrapper input[type="color"]').forEach(input => { input.addEventListener('input', (e) => e.target.parentElement.style.backgroundColor = e.target.value); });
+            
+            document.getElementById('dark-mode-toggle').addEventListener('change', toggleDarkMode);
+            if (localStorage.getItem('darkMode') === 'enabled') { document.body.classList.add('dark-mode'); document.getElementById('dark-mode-toggle').checked = true; }
+            
+            document.getElementById('export-html-btn').addEventListener('click', exportOrderHTML);
+            document.getElementById('export-pdf-btn').addEventListener('click', exportOrderPDF);
+            document.getElementById('backupBtn').addEventListener('click', backupData);
+            document.getElementById('restoreBtn').addEventListener('click', restoreData);
+            
+            document.getElementById('proof-screenshot-link').addEventListener('click', (e) => {
+                e.preventDefault();
+                const imageUrl = e.currentTarget.href;
+                if (imageUrl && !imageUrl.endsWith('#')) {
+                    document.getElementById('full-size-image').src = imageUrl;
+                    document.getElementById('image-viewer-modal').style.display = 'flex';
+                }
+            });
+            document.getElementById('image-viewer-close').addEventListener('click', () => document.getElementById('image-viewer-modal').style.display = 'none');
+            document.getElementById('image-viewer-modal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('image-viewer-modal')) document.getElementById('image-viewer-modal').style.display = 'none';
+            });
+        }
+        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); localStorage.setItem('darkMode', document.body.classList.contains('dark-mode') ? 'enabled' : 'disabled'); }
+
+        // --- ARTWORKS LOGIC ---
+        function addSizeRow(containerId, name = '', price = '', isDefault = false) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = 'size-row';
+            const groupName = `default_size_${containerId}`;
+            div.innerHTML = `
+                <input type="radio" name="${groupName}" ${isDefault ? 'checked' : ''}>
+                <input type="text" class="size-name" placeholder="Name (e.g. Small)" value="${name}" class="form-control" style="width: 40%;">
+                <input type="number" class="size-price" placeholder="Price Addon (+)" value="${price}" class="form-control" style="width: 30%;">
+                <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">&times;</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function loadArtworks() {
+            const table = document.getElementById('artworks-table');
+            db.collection('artworks').orderBy('createdAt', 'desc').get().then(snap => {
+                table.innerHTML = '';
+                if (snap.empty) { table.innerHTML = '<tr><td colspan="7">No artworks found.</td></tr>'; return; }
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const row = table.insertRow();
+                    let priceDisplay = `PKR ${d.price.toLocaleString()}`;
+                    if(d.discountPrice) priceDisplay = `<span style="text-decoration:line-through; color:var(--secondary); font-size:0.85em;">PKR ${d.price}</span><br><strong>PKR ${d.discountPrice}</strong>`;
+                    row.innerHTML = `<td><input type="checkbox" class="table-checkbox" data-id="${doc.id}"></td><td><img src="${(d.imageUrls && d.imageUrls.length) ? d.imageUrls[0] : ''}" class="artwork-image"></td><td>${d.serviceId||'N/A'}</td><td>${d.title}</td><td>${priceDisplay}</td><td>${d.category}</td><td><button class="action-btn edit-btn" onclick="editArtwork('${doc.id}')"><i class="fas fa-edit"></i></button><button class="action-btn delete-btn" onclick="deleteArtwork('${doc.id}')"><i class="fas fa-trash"></i></button></td>`;
+                    row.querySelector('.table-checkbox').addEventListener('change', e => handleSelectSingle('artworks', e.target.dataset.id, e.target.checked));
+                });
+                updateSelectionCount('artworks');
+            });
+        }
+
+        async function addArtwork(e) {
+            e.preventDefault();
+            const sizes = Array.from(document.querySelectorAll('#size-rows-container .size-row')).map(row => ({
+                name: row.querySelector('.size-name').value,
+                price: parseFloat(row.querySelector('.size-price').value) || 0,
+                isDefault: row.querySelector('input[type="radio"]').checked,
+                status: 'available'
+            }));
+
+            const artworkData = {
+                title: document.getElementById('title').value,
+                artist: document.getElementById('artist').value,
+                imageUrls: document.getElementById('imageUrls').value.split(',').map(u=>u.trim()).filter(Boolean),
+                price: parseFloat(document.getElementById('price').value),
+                discountPrice: parseFloat(document.getElementById('discountPrice').value) || null,
+                stock: parseInt(document.getElementById('stock').value) || 0,
+                category: document.getElementById('category').value,
+                description: document.getElementById('description').value,
+                status: document.getElementById('p-availability').value,
+                sizes: sizes,
+                serviceId: await getNextServiceId(),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            try {
+                const docRef = await db.collection("artworks").add(artworkData);
+                await logAction('create', 'artworks', docRef.id, null, artworkData, `Created product: ${artworkData.title}`);
+                showStatus(`Artwork added!`, "success");
+                document.getElementById('add-artwork-form').reset(); document.getElementById('size-rows-container').innerHTML=''; loadArtworks();
+            } catch (error) { showStatus(`Error: ${error.message}`, "error"); }
+        }
+
+        async function getNextServiceId() { const snap = await db.collection("artworks").orderBy("createdAt", "desc").limit(1).get(); if (snap.empty) return 'AT1001'; const lastId = snap.docs[0].data().serviceId || 'AT1000'; const num = parseInt(lastId.replace(/\D/g, ''), 10); return `AT${isNaN(num) ? 1001 : num + 1}`; }
+
+        async function editArtwork(id) {
+            const doc = await db.collection('artworks').doc(id).get();
+            if (!doc.exists) return;
+            const d = doc.data();
+            document.getElementById('edit-artwork-id').value = id;
+            document.getElementById('edit-title').value = d.title;
+            document.getElementById('edit-artist').value = d.artist;
+            document.getElementById('edit-imageUrls').value = d.imageUrls.join(', ');
+            document.getElementById('edit-price').value = d.price;
+            document.getElementById('edit-discountPrice').value = d.discountPrice || '';
+            document.getElementById('edit-stock').value = d.stock || 0;
+            document.getElementById('edit-availability').value = d.status || 'available';
+            document.getElementById('edit-category').value = d.category;
+            document.getElementById('edit-description').value = d.description;
+            
+            const container = document.getElementById('edit-size-rows-container');
+            container.innerHTML = '';
+            if(d.sizes) d.sizes.forEach(s => addSizeRow('edit-size-rows-container', s.name, s.price, s.isDefault));
+            openModal('edit-artwork-modal');
+        }
+
+        async function updateArtwork(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-artwork-id').value;
+            const oldDoc = await db.collection('artworks').doc(id).get();
+            const oldData = oldDoc.data();
+
+            const sizes = Array.from(document.querySelectorAll('#edit-size-rows-container .size-row')).map(row => ({
+                name: row.querySelector('.size-name').value,
+                price: parseFloat(row.querySelector('.size-price').value) || 0,
+                isDefault: row.querySelector('input[type="radio"]').checked,
+                status: 'available'
+            }));
+
+            const newData = {
+                title: document.getElementById('edit-title').value,
+                artist: document.getElementById('edit-artist').value,
+                imageUrls: document.getElementById('edit-imageUrls').value.split(',').map(u=>u.trim()).filter(Boolean),
+                price: parseFloat(document.getElementById('edit-price').value),
+                discountPrice: parseFloat(document.getElementById('edit-discountPrice').value) || null,
+                stock: parseInt(document.getElementById('edit-stock').value) || 0,
+                status: document.getElementById('edit-availability').value,
+                category: document.getElementById('edit-category').value,
+                description: document.getElementById('edit-description').value,
+                sizes: sizes
+            };
+            try {
+                await db.collection("artworks").doc(id).update(newData);
+                await logAction('edit', 'artworks', id, oldData, { ...oldData, ...newData }, `Edited product: ${newData.title}`);
+                showStatus("Artwork updated!", "success"); closeModal('edit-artwork-modal'); loadArtworks();
+            } catch (error) { showStatus(`Error: ${error.message}`, "error"); }
+        }
+
+        async function deleteArtwork(id) {
+            if (!confirm('Delete this artwork? You will have 24 hours to restore it from Account History.')) return;
+            try {
+                const doc = await db.collection('artworks').doc(id).get();
+                await logAction('delete', 'artworks', id, doc.data(), null, `Deleted product: ${doc.data().title}`);
+                await db.collection("artworks").doc(id).delete();
+                showStatus("Artwork deleted (Restorable for 24h).", "success");
+                loadArtworks();
+            } catch(e) { showStatus(e.message, 'error'); }
+        }
+
+        // --- BULK OPERATIONS ---
+        function handleSelectAll(type, checked) { const set=type==='artworks'?selectedArtworks:selectedOrders; document.querySelectorAll(`#${type}-table .table-checkbox`).forEach(cb => { cb.checked=checked; if(checked) set.add(cb.dataset.id); else set.clear(); }); updateSelectionCount(type); }
+        function handleSelectSingle(type, id, checked) { const set=type==='artworks'?selectedArtworks:selectedOrders; if(checked) set.add(id); else set.delete(id); updateSelectionCount(type); }
+        function updateSelectionCount(type) { const set=type==='artworks'?selectedArtworks:selectedOrders; const count=set.size; document.getElementById(`${type}-bulk-actions`).style.display=count > 0 ? 'flex' : 'none'; document.getElementById(`${type}-selection-count`).textContent=`${count} items selected`; const allCb=document.getElementById(`select-all-${type}`); const total=document.querySelectorAll(`#${type}-table .table-checkbox`).length; allCb.checked=total>0&&count===total; allCb.indeterminate=count>0&&count<total; }
+
+        async function bulkDeleteArtworks() {
+            if (!confirm(`Delete ${selectedArtworks.size} artworks to trash?`)) return;
+            const batch = db.batch();
+            for (const id of selectedArtworks) {
+                const doc = await db.collection('artworks').doc(id).get();
+                if(doc.exists) {
+                    await logAction('delete', 'artworks', id, doc.data(), null, `Bulk deleted artwork: ${doc.data().title}`);
+                    batch.delete(doc.ref);
+                }
+            }
+            await batch.commit(); showStatus(`${selectedArtworks.size} artworks deleted.`, 'success'); selectedArtworks.clear(); loadArtworks();
+        }
+
+        async function bulkDeleteOrders() {
+            if (!confirm(`Delete ${selectedOrders.size} orders to trash?`)) return;
+            const batch = db.batch();
+            for (const id of selectedOrders) {
+                const doc = await db.collection('orders').doc(id).get();
+                if(doc.exists) {
+                    await logAction('delete', 'orders', id, doc.data(), null, `Bulk deleted order: #${doc.data().orderId || id}`);
+                    batch.delete(doc.ref);
+                }
+            }
+            await batch.commit(); showStatus(`${selectedOrders.size} orders deleted.`, 'success'); selectedOrders.clear();
+        }
+
+        async function handleBulkUpdate(e) {
+            e.preventDefault(); const updateData={}; const title = document.getElementById('bulk-edit-title').value.trim(); const description = document.getElementById('bulk-edit-description').value.trim(); if(title) updateData.title = title; if(description) updateData.description = description; const category = document.getElementById('bulk-edit-category').value; const artist = document.getElementById('bulk-edit-artist').value; if (category) updateData.category=category; if (artist) updateData.artist=artist; const priceOp=document.getElementById('bulk-price-op').value; const priceVal=parseFloat(document.getElementById('bulk-price-value').value); if (!Object.keys(updateData).length && !priceOp) { showStatus('No changes selected.', 'info'); return; }
+            const batch=db.batch();
+            const docs=await Promise.all(Array.from(selectedArtworks).map(id=>db.collection('artworks').doc(id).get()));
+            for(const doc of docs) {
+                if(!doc.exists) continue;
+                let dataToUpdate={...updateData};
+                if(priceOp && !isNaN(priceVal)){
+                    let currentPrice = parseFloat(doc.data().price); if (isNaN(currentPrice)) continue;
+                    let newPrice = currentPrice; if(priceOp==='increase_percent') newPrice = currentPrice * (1 + (priceVal / 100)); else if(priceOp==='decrease_percent') newPrice = currentPrice * (1 - (priceVal / 100)); else if(priceOp==='set_fixed') newPrice = priceVal; dataToUpdate.price = parseFloat(newPrice.toFixed(2));
+                }
+                if (Object.keys(dataToUpdate).length > 0) {
+                    await logAction('edit', 'artworks', doc.id, doc.data(), dataToUpdate, `Bulk edited artwork: ${doc.data().title}`);
+                    batch.update(doc.ref, dataToUpdate);
+                }
+            }
+            await batch.commit(); showStatus(`${selectedArtworks.size} artworks updated.`, 'success'); closeModal('bulk-edit-artwork-modal'); selectedArtworks.clear(); loadArtworks();
+        }
+
+        // --- SECRET SETTINGS ---
+        async function secretSearch() {
+            const sid = document.getElementById('secret-search-id').value.trim().toUpperCase();
+            if(!sid) return showStatus("Please enter a Service ID", "error");
+            
+            const snap = await db.collection('artworks').where('serviceId', '==', sid).limit(1).get();
+            if(snap.empty) return showStatus('Service ID not found', 'error');
+            
+            const doc = snap.docs[0]; const d = doc.data();
+            const ui = document.getElementById('secret-manager-ui');
+            
+            document.getElementById('secret-doc-id').value = doc.id;
+            document.getElementById('secret-mgr-title').textContent = `${d.title} (${d.serviceId})`;
+            document.getElementById('secret-status').value = d.status || 'available';
+            document.getElementById('secret-eye-enabled').checked = d.eyeCounterEnabled || false;
+            document.getElementById('secret-eye-count').value = d.eyeCount || '';
+
+            const sizeList = document.getElementById('secret-size-list');
+            sizeList.innerHTML = '';
+            
+            let sizes = d.sizes || [];
+            if(typeof sizes === 'string') { sizes = sizes.split(',').map(s => ({name: s.trim(), price: 0, status: 'available'})); }
+            
+            if(sizes.length === 0) {
+                sizeList.innerHTML = '<p>No sizes found for this product.</p>';
+            } else {
+                sizes.forEach((s, idx) => {
+                    const row = document.createElement('div');
+                    row.className = 'size-manage-row';
+                    const currentStatus = s.status || 'available';
+                    row.innerHTML = `<div><strong>${s.name}</strong> <small style="color:#888;">(${s.price ? 'Rs '+s.price : 'Base'})</small></div><select class="secret-size-status" data-idx="${idx}" style="padding:5px;"><option value="available" ${currentStatus === 'available' ? 'selected' : ''}>Available</option><option value="sold_out" ${currentStatus === 'sold_out' ? 'selected' : ''}>Sold Out</option><option value="unavailable" ${currentStatus === 'unavailable' ? 'selected' : ''}>Hidden</option></select><div style="text-align:right;"><span style="font-size:1.2rem; color:${currentStatus === 'available' ? 'green' : 'red'};"><i class="fas ${currentStatus === 'available' ? 'fa-check-circle' : 'fa-times-circle'}"></i></span></div>`;
+                    sizeList.appendChild(row);
+                });
+            }
+            ui.style.display = 'block';
+        }
+
+        async function secretSave() {
+            const id = document.getElementById('secret-doc-id').value;
+            const oldDoc = await db.collection('artworks').doc(id).get();
+            const oldData = oldDoc.data();
+
+            let newSizes = [];
+            if(oldData.sizes) {
+                if(typeof oldData.sizes === 'string') { newSizes = oldData.sizes.split(',').map(s => ({name: s.trim(), price: 0})); } 
+                else { newSizes = [...oldData.sizes]; }
+            }
+
+            document.querySelectorAll('.secret-size-status').forEach(el => {
+                const idx = el.dataset.idx;
+                if(newSizes[idx]) newSizes[idx].status = el.value;
+            });
+
+            const newData = {
+                status: document.getElementById('secret-status').value,
+                eyeCounterEnabled: document.getElementById('secret-eye-enabled').checked,
+                eyeCount: parseInt(document.getElementById('secret-eye-count').value) || 0,
+                sizes: newSizes
+            };
+
+            await db.collection('artworks').doc(id).update(newData);
+            await logAction('edit', 'artworks', id, oldData, { ...oldData, ...newData }, `Updated Secret Settings for ${oldData.title}`);
+            showStatus('Changes saved & logged!', 'success');
+            document.getElementById('secret-manager-ui').style.display = 'none';
+        }
+
+        async function applyUniversal() {
+            const count = parseInt(document.getElementById('universal-eye-count').value);
+            if(isNaN(count)) return showStatus('Valid number required', 'error');
+            if(!confirm('Apply this view count to ALL products?')) return;
+            const snap = await db.collection('artworks').get();
+            const batch = db.batch();
+            snap.forEach(d => batch.update(d.ref, { eyeCount: count, eyeCounterEnabled: true }));
+            await batch.commit();
+            await logAction('edit', 'artworks', 'BATCH', null, null, `Applied universal eye count: ${count}`);
+            showStatus('Applied to all products', 'success');
+        }
+
+        async function disableUniversal() {
+            if(!confirm('Disable eye counter for ALL products?')) return;
+            const snap = await db.collection('artworks').get();
+            const batch = db.batch();
+            snap.forEach(d => batch.update(d.ref, { eyeCounterEnabled: false }));
+            await batch.commit();
+            await logAction('edit', 'artworks', 'BATCH', null, null, 'Disabled universal eye counters');
+            showStatus('All eye counters disabled', 'success');
+        }
+
+        // --- ORDERS ---
+        function loadOrders() { 
+            const table = document.getElementById('orders-table'); 
+            db.collection('orders').orderBy('createdAt', 'desc').onSnapshot(snap => { 
+                table.innerHTML = ''; 
+                if (snap.empty) { table.innerHTML = '<tr><td colspan="8">No orders found.</td></tr>'; return; } 
+                snap.forEach(doc => { 
+                    const d = doc.data(); 
+                    const row = table.insertRow(); 
+                    const orderDate = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toLocaleDateString() : (d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'); 
+                    const paymentStatus = d.paymentStatus || 'unpaid'; 
+                    const paymentStatusText = paymentStatus.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()); 
+                    row.innerHTML = `<td><input type="checkbox" class="table-checkbox" data-id="${doc.id}"></td><td>#${d.orderId || doc.id}</td><td>${d.customerName}</td><td>PKR ${(d.grandTotal || 0).toLocaleString()}</td><td><span class="payment-status payment-status-${paymentStatus}">${paymentStatusText}</span></td><td><span class="order-status status-${d.status}">${d.status}</span></td><td>${orderDate}</td><td><button class="action-btn view-btn" onclick="viewOrder('${doc.id}')"><i class="fas fa-eye"></i></button><button class="action-btn delete-btn" onclick="deleteOrder('${doc.id}')"><i class="fas fa-trash"></i></button></td>`; 
+                    row.querySelector('.table-checkbox').addEventListener('change', e => handleSelectSingle('orders', e.target.dataset.id, e.target.checked)); 
+                }); 
+                updateSelectionCount('orders'); 
+            }, err => { table.innerHTML = '<tr><td colspan="8">Error loading orders.</td></tr>'; }); 
+        }
+        
+        async function viewOrder(id) {
+            const doc = await db.collection("orders").doc(id).get();
+            if (!doc.exists) return;
+            const d = doc.data();
+            currentOrderForExport = d; 
+
+            document.getElementById('view-order-id').textContent = `#${d.orderId || id}`;
+            document.getElementById('view-order-date').textContent = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toLocaleString() : 'N/A';
+            document.getElementById('order-status-select').value = d.status;
+            document.getElementById('view-customer-name').textContent = d.customerName;
+            document.getElementById('view-customer-email').textContent = d.customerEmail;
+            document.getElementById('view-customer-phone').textContent = d.customerPhone;
+            document.getElementById('view-customer-address').textContent = d.customerAddress;
+
+            let itemsHTML = (d.items || []).map(item => `
+                <div class="order-item">
+                    <strong>${item.serviceId || 'N/A'}:</strong> ${item.title} 
+                    <br><span style="color:var(--secondary); font-size:0.9em;">Size: ${item.size || 'Standard'}</span>
+                    <br>(Qty: ${item.quantity}) x ${item.price}
+                </div>`).join('');
+            
+            let totalHTML = `<div class="order-total">`;
+            if (d.discountAmount > 0) {
+                totalHTML += `<div>Subtotal: PKR ${d.subtotal.toLocaleString()}</div>`;
+                totalHTML += `<div>Discount (${d.couponCode}): -PKR ${d.discountAmount.toLocaleString()}</div>`;
+            }
+            totalHTML += `<div>Delivery: PKR ${d.deliveryFee.toLocaleString()}</div>`;
+            totalHTML += `<b>Total: PKR ${d.grandTotal.toLocaleString()}</b></div>`;
+            document.getElementById('view-order-items').innerHTML = itemsHTML + totalHTML;
+
+            const proofSection = document.getElementById('payment-proof-section');
+            const confirmBtn = document.getElementById('confirm-payment-btn');
+
+            if (d.paymentProof) {
+                proofSection.style.display = 'block';
+                document.getElementById('proof-pid').textContent = d.paymentProof.paymentId || 'N/A';
+                document.getElementById('proof-method').textContent = d.paymentProof.method || 'N/A';
+                document.getElementById('proof-sender-name').textContent = d.paymentProof.senderName;
+                document.getElementById('proof-sender-number').textContent = d.paymentProof.senderNumber || d.paymentProof.senderPhone || 'N/A';
+                document.getElementById('proof-submitted-at').textContent = d.paymentProof.submittedAt && d.paymentProof.submittedAt.toDate ? d.paymentProof.submittedAt.toDate().toLocaleString() : 'N/A';
+                
+                const screenshotLink = document.getElementById('proof-screenshot-link');
+                const screenshotImg = document.getElementById('proof-screenshot-img');
+                const screenshotUrl = d.paymentProof.screenshotData || d.paymentProof.screenshotURL || d.paymentProof.screenshot;
+
+                if (screenshotUrl) {
+                    screenshotImg.src = screenshotUrl; 
+                    screenshotLink.href = screenshotUrl;
+                    screenshotImg.style.display = 'block';
+                } else {
+                    screenshotImg.src = ''; screenshotLink.href = '#'; screenshotImg.style.display = 'none';
+                }
+            } else {
+                proofSection.style.display = 'none';
+            }
+
+            if (d.paymentStatus === 'pending_confirmation') {
+                confirmBtn.style.display = 'inline-flex'; confirmBtn.dataset.orderId = id;
+            } else {
+                confirmBtn.style.display = 'none';
+            }
+
+            document.getElementById('update-order-status-btn').dataset.orderId = id;
+            openModal('view-order-modal');
+        }
+
+        async function updateOrderStatus() { 
+            const id = document.getElementById('update-order-status-btn').dataset.orderId; 
+            const status = document.getElementById('order-status-select').value; 
+            const oldDoc = await db.collection("orders").doc(id).get();
+            db.collection("orders").doc(id).update({ status }).then(async () => { 
+                await logAction('edit', 'orders', id, oldDoc.data(), { status }, `Updated Order Status for #${oldDoc.data().orderId || id}`);
+                showStatus("Order status updated!", "success"); closeModal('view-order-modal'); 
+            }); 
+        }
+
+        async function deleteOrder(id) { 
+            if (!confirm('Move this order to trash?')) return;
+            const doc = await db.collection("orders").doc(id).get();
+            if(doc.exists) await logAction('delete', 'orders', id, doc.data(), null, `Deleted order #${doc.data().orderId || id}`);
+            db.collection("orders").doc(id).delete().then(() => { showStatus("Order moved to trash.", "success"); }); 
+        }
+
+        async function confirmPayment() { 
+            const id = document.getElementById('confirm-payment-btn').dataset.orderId; if (!id) return; 
+            if (confirm('Are you sure you want to mark this payment as confirmed?')) { 
+                const oldDoc = await db.collection("orders").doc(id).get();
+                db.collection("orders").doc(id).update({ paymentStatus: 'paid' }).then(async () => { 
+                    await logAction('edit', 'orders', id, oldDoc.data(), { paymentStatus: 'paid' }, `Confirmed payment for #${oldDoc.data().orderId || id}`);
+                    showStatus("Payment confirmed successfully!", "success"); closeModal('view-order-modal'); 
+                }); 
+            } 
+        }
+
+        function exportOrderHTML() {
+            if (!currentOrderForExport || !currentOrderForExport.paymentProof) { showStatus('No payment slip available.', 'info'); return; }
+            const d = currentOrderForExport; const orderId = d.orderId || 'N/A';
+            const slipElement = document.getElementById('payment-proof-section');
+            const htmlContent = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Payment Slip - Order ${orderId}</title><style>body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; } .container { max-width: 500px; margin: 20px auto; padding: 25px; border: 1px solid #ddd; background-color: #fff; border-radius: 8px; } img { max-width: 100%; }</style></head><body><div class="container"><h1>Payment Slip for Order #${orderId}</h1>${slipElement.innerHTML}</div></body></html>`;
+            const blob = new Blob([htmlContent], { type: 'text/html' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Payment-Slip-${orderId}.html`; a.click(); URL.revokeObjectURL(a.href);
+        }
+
+        function exportOrderPDF() {
+            if (!currentOrderForExport || !currentOrderForExport.paymentProof) { showStatus('No payment slip available.', 'info'); return; }
+            const orderId = currentOrderForExport.orderId || 'N/A'; const { jsPDF } = window.jspdf; const content = document.getElementById('payment-proof-section'); showStatus('Generating PDF...', 'info');
+            const options = { allowTaint: true, useCORS: true, backgroundColor: "#ffffff", scale: 2 };
+            html2canvas(content, options).then(canvas => {
+                const imgData = canvas.toDataURL('image/png'); const pdf = new jsPDF('p', 'mm', 'a4'); const pdfWidth = pdf.internal.pageSize.getWidth(); const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                pdf.setFontSize(16); pdf.text(`Payment Slip for Order #${orderId}`, 15, 15); pdf.addImage(imgData, 'PNG', 15, 25, pdfWidth - 30, pdfHeight * ((pdfWidth - 30) / pdfWidth)); pdf.save(`Payment-Slip-${orderId}.pdf`); showStatus('PDF downloaded!', 'success');
+            });
+        }
+
+        // --- COUPONS ---
+        function loadCoupons() { const table = document.getElementById('coupons-table'); db.collection('coupons').orderBy('createdAt', 'desc').get().then(snap => { table.innerHTML = ''; if (snap.empty) { table.innerHTML = '<tr><td colspan="6">No coupons found.</td></tr>'; return; } snap.forEach(doc => { const d = doc.data(); const row = table.insertRow(); row.innerHTML = `<td>${d.code}</td><td>${d.discount}%</td><td>${d.totalUses||0} / ${d.usageLimit}</td><td><span class="order-status status-${d.status==='active'?'delivered':'cancelled'}">${d.status}</span></td><td>${d.oneTimePerCustomer ? 'Yes' : 'No'}</td><td><button class="action-btn edit-btn" onclick="editCoupon('${doc.id}')"><i class="fas fa-edit"></i></button><button class="action-btn delete-btn" onclick="deleteCoupon('${doc.id}')"><i class="fas fa-trash"></i></button></td>`; }); }); }
+        
+        async function saveCoupon(e) { 
+            e.preventDefault(); const id = document.getElementById('coupon-id').value; const code = document.getElementById('coupon-code').value.toUpperCase().trim(); if(!code) return showStatus('Coupon code cannot be empty.', 'error'); 
+            const data = { code: code, discount: parseInt(document.getElementById('coupon-discount').value, 10), usageLimit: parseInt(document.getElementById('coupon-limit').value, 10), oneTimePerCustomer: document.getElementById('one-time-per-customer').checked, status: document.getElementById('coupon-status').value }; 
+            try { 
+                if (id) { 
+                    const oldDoc = await db.collection('coupons').doc(id).get();
+                    await db.collection('coupons').doc(id).update(data); 
+                    await logAction('edit', 'coupons', id, oldDoc.data(), data, `Edited Coupon: ${data.code}`);
+                    showStatus('Coupon updated!', 'success'); 
+                } else { 
+                    data.totalUses = 0; data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); 
+                    const docRef = await db.collection('coupons').add(data); 
+                    await logAction('create', 'coupons', docRef.id, null, data, `Created Coupon: ${data.code}`);
+                    showStatus('Coupon added!', 'success'); 
+                } 
+                clearCouponForm(); loadCoupons(); 
+            } catch (error) { showStatus(`Error: ${error.message}`, 'error'); } 
+        }
+        
+        async function editCoupon(id) { const doc = await db.collection('coupons').doc(id).get(); if (!doc.exists) return; const d = doc.data(); document.getElementById('coupon-id').value = id; document.getElementById('coupon-code').value = d.code; document.getElementById('coupon-discount').value = d.discount; document.getElementById('coupon-limit').value = d.usageLimit; document.getElementById('one-time-per-customer').checked = d.oneTimePerCustomer; document.getElementById('coupon-status').value = d.status; document.querySelector('#coupon-form button[type="submit"]').textContent = 'Update Coupon'; }
+        function clearCouponForm() { document.getElementById('coupon-form').reset(); document.getElementById('coupon-id').value = ''; document.querySelector('#coupon-form button[type="submit"]').textContent = 'Save Coupon'; }
+        
+        async function deleteCoupon(id) { 
+            if (confirm('Move coupon to trash?')) { 
+                const doc = await db.collection('coupons').doc(id).get();
+                if(doc.exists) await logAction('delete', 'coupons', id, doc.data(), null, `Deleted Coupon: ${doc.data().code}`);
+                db.collection('coupons').doc(id).delete().then(() => { showStatus('Coupon moved to trash.', 'success'); loadCoupons(); }); 
+            } 
+        }
+
+        // --- PAYMENT METHODS ---
+        function loadPaymentMethods() { const table = document.getElementById('payment-methods-table'); db.collection('paymentMethods').orderBy('name').onSnapshot(snap => { table.innerHTML = ''; if (snap.empty) { table.innerHTML = '<tr><td colspan="6">No payment methods found.</td></tr>'; return; } snap.forEach(doc => { const d = doc.data(); const row = table.insertRow(); row.innerHTML = `<td><img src="${d.logoUrl || 'https://via.placeholder.com/50'}" class="payment-logo-preview"></td><td>${d.name}</td><td>${d.ownerName || 'N/A'}</td><td>${d.type.toUpperCase()}</td><td><span class="order-status status-${d.enabled ? 'delivered' : 'cancelled'}">${d.enabled ? 'Enabled' : 'Disabled'}</span></td><td><button class="action-btn edit-btn" onclick="editPaymentMethod('${doc.id}')"><i class="fas fa-edit"></i></button><button class="action-btn delete-btn" onclick="deletePaymentMethod('${doc.id}')"><i class="fas fa-trash"></i></button></td>`; }); }); }
+        
+        async function savePaymentMethod(e) { 
+            e.preventDefault(); const id = document.getElementById('payment-method-id').value; 
+            const data = { name: document.getElementById('payment-method-name').value, ownerName: document.getElementById('payment-method-owner-name').value, type: document.querySelector('input[name="method_type"]:checked').value, details: document.getElementById('payment-method-details').value, logoUrl: document.getElementById('payment-method-logo').value, note: document.getElementById('payment-method-note').value, enabled: document.getElementById('payment-method-enabled').checked, }; 
+            try { 
+                if (id) { 
+                    const oldDoc = await db.collection('paymentMethods').doc(id).get();
+                    await db.collection('paymentMethods').doc(id).update(data); 
+                    await logAction('edit', 'paymentMethods', id, oldDoc.data(), data, `Edited Payment Method: ${data.name}`);
+                    showStatus('Payment method updated!', 'success'); 
+                } else { 
+                    data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); 
+                    const docRef = await db.collection('paymentMethods').add(data); 
+                    await logAction('create', 'paymentMethods', docRef.id, null, data, `Created Payment Method: ${data.name}`);
+                    showStatus('Payment method added!', 'success'); 
+                } 
+                clearPaymentMethodForm(); 
+            } catch (error) { showStatus(`Error: ${error.message}`, 'error'); } 
+        }
+        
+        async function editPaymentMethod(id) { const doc = await db.collection('paymentMethods').doc(id).get(); if (!doc.exists) return; const d = doc.data(); document.getElementById('payment-method-id').value = id; document.getElementById('payment-method-name').value = d.name; document.getElementById('payment-method-owner-name').value = d.ownerName || ''; document.querySelector(`input[name="method_type"][value="${d.type}"]`).checked = true; document.getElementById('payment-method-details').value = d.details; document.getElementById('payment-method-logo').value = d.logoUrl; document.getElementById('payment-method-note').value = d.note || ''; document.getElementById('payment-method-enabled').checked = d.enabled; document.querySelector('#payment-method-form button[type="submit"]').textContent = 'Update Method'; }
+        function clearPaymentMethodForm() { document.getElementById('payment-method-form').reset(); document.getElementById('payment-method-id').value = ''; document.querySelector('#payment-method-form button[type="submit"]').textContent = 'Save Method'; }
+        
+        async function deletePaymentMethod(id) { 
+            if (confirm('Move payment method to trash?')) { 
+                const doc = await db.collection('paymentMethods').doc(id).get();
+                if(doc.exists) await logAction('delete', 'paymentMethods', id, doc.data(), null, `Deleted Payment Method: ${doc.data().name}`);
+                db.collection('paymentMethods').doc(id).delete().then(() => showStatus('Payment method moved to trash.', 'success')); 
+            } 
+        }
+
+        // --- CUSTOM SECTIONS ---
+        function loadCustomSections() { db.collection('customSections').orderBy('order').get().then(snap => { document.getElementById('custom-sections-list').innerHTML = snap.empty ? 'No sections found.' : snap.docs.map(doc => { const d = doc.data(); return `<div class="custom-section-item ${!d.enabled ? 'disabled' : ''}"><div><strong>${d.title}</strong> (Order: ${d.order})</div><div><button class="btn btn-info" style="padding:5px 10px" onclick="openSectionEditor('${doc.id}')">Edit</button><button class="btn btn-danger" style="padding:5px 10px" onclick="deleteSection('${doc.id}')">Delete</button></div></div>`; }).join(''); }); }
+        async function openSectionEditor(id = null) { document.getElementById('section-editor-form').reset(); document.getElementById('section-id-input').value = ''; if (id) { const doc = await db.collection('customSections').doc(id).get(); const d = doc.data(); document.getElementById('section-id-input').value = id; document.getElementById('section-title').value = d.title; document.getElementById('section-order').value = d.order; document.getElementById('section-enabled').checked = d.enabled; document.getElementById('section-html').value = d.html || ''; document.getElementById('section-css').value = d.css || ''; document.getElementById('section-js').value = d.js || ''; } openModal('section-editor-modal'); }
+        async function saveSection(e) { 
+            e.preventDefault(); const id = document.getElementById('section-id-input').value; 
+            const data = { title: document.getElementById('section-title').value, order: parseInt(document.getElementById('section-order').value), enabled: document.getElementById('section-enabled').checked, html: document.getElementById('section-html').value, css: document.getElementById('section-css').value, js: document.getElementById('section-js').value }; 
+            if (id) { 
+                const oldDoc = await db.collection('customSections').doc(id).get();
+                await db.collection('customSections').doc(id).update(data); 
+                await logAction('edit', 'customSections', id, oldDoc.data(), data, `Edited Custom Section: ${data.title}`);
+            } else { 
+                const docRef = await db.collection('customSections').add(data); 
+                await logAction('create', 'customSections', docRef.id, null, data, `Created Custom Section: ${data.title}`);
+            } 
+            showStatus('Section saved.', 'success'); closeModal('section-editor-modal'); loadCustomSections(); 
+        }
+        async function deleteSection(id) { 
+            if(confirm('Move section to trash?')) { 
+                const doc = await db.collection('customSections').doc(id).get();
+                if(doc.exists) await logAction('delete', 'customSections', id, doc.data(), null, `Deleted Custom Section: ${doc.data().title}`);
+                db.collection('customSections').doc(id).delete().then(() => { showStatus('Section moved to trash.', 'success'); loadCustomSections(); }); 
+            } 
+        }
+
+        // --- SETTINGS ---
+        function loadSiteSettings() { db.collection('siteSettings').doc('contactInfo').get().then(doc => { if(doc.exists) { const d = doc.data(); document.getElementById('contact-email').value = d.email || ''; document.getElementById('contact-phone').value = d.phone || ''; document.getElementById('contact-address').value = d.address || '';document.getElementById('contact-copyright').value = d.copyright || '&copy; 2025 Arrty Trails. All rights reserved.'; }}); db.collection('siteSettings').doc('socialLinks').get().then(doc => { if(doc.exists) { const d = doc.data(); document.getElementById('social-ig').value = d.instagram || ''; document.getElementById('social-fb').value = d.facebook || ''; }}); db.collection('siteSettings').doc('visibility').get().then(doc => { if(doc.exists) { const d = doc.data(); document.getElementById('toggle-about').checked = d.about !== false; document.getElementById('toggle-contact').checked = d.contact !== false; }}); db.collection('siteSettings').doc('aboutContent').get().then(doc => { if(doc.exists) { document.getElementById('about-content-editor').value = doc.data().content || ''; }}); }
+        function saveMarqueeSettings() { db.collection('siteSettings').doc('marquee').set({ enabled: document.getElementById('marquee-enabled').checked, text: document.getElementById('marquee-text').value, backgroundColor: document.getElementById('marquee-bg-color').value, textColor: document.getElementById('marquee-text-color').value }).then(() => showStatus('Marquee saved.', 'success')); }
+        function addDeliveryRule(rule={min:0,max:0,fee:0}) { document.getElementById('delivery-rules-container').insertAdjacentHTML('beforeend', `<div class="delivery-rule">Min:<input type="number" class="min-val" value="${rule.min}">Max:<input type="number" class="max-val" value="${rule.max}">Fee:<input type="number" class="fee-val" value="${rule.fee}"><button class="btn btn-danger" style="padding:5px 10px;" onclick="this.parentElement.remove()">&times;</button></div>`); }
+        function saveDeliveryRules() { const rules = Array.from(document.querySelectorAll('.delivery-rule')).map(el=>({min:parseFloat(el.querySelector('.min-val').value),max:parseFloat(el.querySelector('.max-val').value),fee:parseFloat(el.querySelector('.fee-val').value)})); db.collection('siteSettings').doc('deliveryRules').set({rules}).then(()=>showStatus('Delivery rules saved.','success')); }
+        function saveContactInfo(e) { e.preventDefault(); db.collection("siteSettings").doc("contactInfo").set({ email: document.getElementById('contact-email').value, phone: document.getElementById('contact-phone').value, address: document.getElementById('contact-address').value, copyright: document.getElementById('contact-copyright').value }).then(() => showStatus("Contact info saved.", "success")); }
+        function saveSocialLinks(e) { e.preventDefault(); db.collection("siteSettings").doc("socialLinks").set({ instagram: document.getElementById('social-ig').value, facebook: document.getElementById('social-fb').value }).then(() => showStatus("Social links saved.", "success")); }
+        function saveVisibility() { const settings = { about: document.getElementById('toggle-about').checked, contact: document.getElementById('toggle-contact').checked }; db.collection('siteSettings').doc('visibility').set(settings).then(() => showStatus('Visibility saved.', 'success')); }
+        function saveAboutContent() { const content = document.getElementById('about-content-editor').value; db.collection('siteSettings').doc('aboutContent').set({ content }).then(() => showStatus('About content saved.', 'success')); }
+        function loadReceiptSettings() { db.collection('siteSettings').doc('receiptSettings').get().then(doc => { if(doc.exists) { const d = doc.data(); document.getElementById('receipt-logo').value = d.logo || ''; document.getElementById('receipt-company').value = d.company || ''; document.getElementById('receipt-address').value = d.address || ''; document.getElementById('receipt-contact').value = d.contact || ''; document.getElementById('receipt-footer').value = d.footer || ''; }}) }
+        function saveReceiptSettings(e) { e.preventDefault(); const data = { logo: document.getElementById('receipt-logo').value, company: document.getElementById('receipt-company').value, address: document.getElementById('receipt-address').value, contact: document.getElementById('receipt-contact').value, footer: document.getElementById('receipt-footer').value }; db.collection('siteSettings').doc('receiptSettings').set(data).then(() => showStatus('Receipt settings saved.', 'success')); }
+        async function loadPolicySettings() { const policies = { shippingPolicy: 'shipping-policy', faqPolicy: 'faq-content', termsPolicy: 'terms-content', privacyPolicy: 'privacy-content' }; for (const [docName, elementId] of Object.entries(policies)) { db.collection('siteSettings').doc(docName).get().then(doc => { if (doc.exists) document.getElementById(elementId).value = doc.data().content || ''; }); } }
+        function savePolicy(docName, contentId) { db.collection('siteSettings').doc(docName).set({ content: document.getElementById(contentId).value }).then(() => showStatus(`${docName.replace('Policy','')} Policy saved.`, 'success')); }
+        function loadDeliveryFee() { document.getElementById('delivery-rules-container').innerHTML = ''; db.collection('siteSettings').doc('deliveryRules').get().then(doc => { if (doc.exists && doc.data().rules) doc.data().rules.forEach(addDeliveryRule); }); }
+        
+        // --- THEME ---
+        const presetThemes = [ { name: 'Default', id: 'theme-default', colors: ['#c89b3c', '#1a1a1a', '#f0f0f0'] }, { name: 'Oceanic', id: 'theme-oceanic', colors: ['#3498db', '#2c3e50', '#ecf0f1'] }, { name: 'Sunset', id: 'theme-sunset', colors: ['#e67e22', '#d35400', '#fdf6e3'] }, { name: 'Forest', id: 'theme-forest', colors: ['#27ae60', '#16a085', '#e8f5e9'] }, { name: 'Royal', id: 'theme-royal', colors: ['#2c1d3c', '#8e44ad', '#9b59b6'] }, { name: 'Crimson', id: 'theme-crimson', colors: ['#4a0e0e', '#c0392b', '#e74c3c']}, { name: 'Cyberpunk', id: 'theme-cyberpunk', colors: ['#00d1b2', '#f1c40f', '#141414']}, { name: 'Vintage', id: 'theme-vintage', colors: ['#d35400', '#f39c12', '#efebe9']}, { name: 'Arctic', id: 'theme-arctic', colors: ['#74b9ff', '#0984e3', '#dfe6e9']}, { name: 'Rose Gold', id: 'theme-rosegold', colors: ['#e1b1ad', '#6d5d5b', '#f7f1f0']}, { name: 'Emerald', id: 'theme-emerald', colors: ['#2ecc71', '#1abc9c', '#f0fdf4']}, { name: 'Graphite', id: 'theme-graphite', colors: ['#95a5a6', '#212121', '#f5f5f5']} ];
+        function loadWebsiteTheme() { db.collection('siteSettings').doc('marquee').get().then(doc => { if (doc.exists) { const d = doc.data(); document.getElementById('marquee-enabled').checked = d.enabled; document.getElementById('marquee-text').value = d.text; document.getElementById('marquee-bg-color').value = d.backgroundColor || '#c89b3c'; document.getElementById('marquee-text-color').value = d.textColor || '#0a0a0a'; document.querySelector('#marquee-bg-color').parentElement.style.backgroundColor = document.getElementById('marquee-bg-color').value; document.querySelector('#marquee-text-color').parentElement.style.backgroundColor = document.getElementById('marquee-text-color').value;} }); const selector = document.getElementById('theme-selector'); selector.innerHTML = presetThemes.map(theme => `<div class="theme-swatch" data-theme-id="${theme.id}"><div class="colors"><div class="color-dot" style="background-color:${theme.colors[0]}"></div><div class="color-dot" style="background-color:${theme.colors[1]}"></div><div class="color-dot" style="background-color:${theme.colors[2]}"></div></div><span>${theme.name}</span></div>`).join(''); selector.querySelectorAll('.theme-swatch').forEach(swatch => swatch.addEventListener('click', () => { selector.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active')); swatch.classList.add('active'); })); Promise.all([ db.collection('siteSettings').doc('activeTheme').get(), db.collection('siteSettings').doc('backgroundStyle').get(), db.collection('siteSettings').doc('manualThemeColors').get() ]).then(([themeDoc, bgDoc, manualDoc]) => { const themeData = themeDoc.data() || { mode: 'preset', themeId: 'theme-default' }; const bgData = bgDoc.data() || { type: '3d', theme: 'stardust' }; const manualData = manualDoc.data() || {}; document.querySelector(`input[name="theme_choice"][value="${themeData.mode}"]`).checked = true; if (themeData.themeId) document.querySelector(`.theme-swatch[data-theme-id="${themeData.themeId}"]`)?.classList.add('active'); document.querySelector(`input[name="bg_type"][value="${bgData.type}"]`).checked = true; if (bgData.type === '3d') { document.getElementById('background-theme-select').value = bgData.theme; } else if (bgData.type === 'gradient') { document.getElementById('bg-gradient-color1').value = bgData.color1; document.getElementById('bg-gradient-color2').value = bgData.color2; } else if (bgData.type === 'solid') { document.getElementById('bg-solid-color').value = bgData.color1; } if (manualData) { for(const [key, value] of Object.entries(manualData)) { const input = document.querySelector(`#manual-theme-editor input[data-var="${key}"]`); if (input) input.value = value; } } document.querySelectorAll('.color-picker-wrapper input').forEach(inp => inp.dispatchEvent(new Event('input'))); toggleManualThemeEditor(); toggleBackgroundOptions(); }); }
+        function toggleManualThemeEditor() { const mode = document.querySelector('input[name="theme_choice"]:checked').value; document.getElementById('manual-theme-editor').classList.toggle('active', mode === 'manual'); document.getElementById('theme-selector').style.display = mode === 'preset' ? 'grid' : 'none'; }
+        function toggleBackgroundOptions() { const type = document.querySelector('input[name="bg_type"]:checked').value; document.querySelectorAll('.background-options').forEach(el => el.classList.remove('active')); document.getElementById(`bg-options-${type}`).classList.add('active'); }
+        function saveThemeSettings() { const mode = document.querySelector('input[name="theme_choice"]:checked').value; let themePromise; if (mode === 'preset') { const presetId = document.querySelector('.theme-swatch.active')?.dataset.themeId || 'theme-default'; themePromise = db.collection('siteSettings').doc('activeTheme').set({ themeId: presetId, mode: 'preset' }); } else { const manualColors = {}; document.querySelectorAll('#manual-theme-editor input[type="color"]').forEach(input => { manualColors[input.dataset.var] = input.value; }); themePromise = Promise.all([ db.collection('siteSettings').doc('activeTheme').set({ themeId: 'theme-manual', mode: 'manual' }), db.collection('siteSettings').doc('manualThemeColors').set(manualColors) ]); } themePromise.then(() => showStatus('Color theme saved.', 'success')); }
+        function saveBackgroundStyle() { const type = document.querySelector('input[name="bg_type"]:checked').value; let styleData = { type }; if (type === '3d') { styleData.theme = document.getElementById('background-theme-select').value; } else if (type === 'gradient') { styleData.color1 = document.getElementById('bg-gradient-color1').value; styleData.color2 = document.getElementById('bg-gradient-color2').value; } else if (type === 'solid') { styleData.color1 = document.getElementById('bg-solid-color').value; } db.collection('siteSettings').doc('backgroundStyle').set(styleData).then(() => showStatus('Background style saved.', 'success')); }
+        
+        // --- ADMIN APPEARANCE ---
+        const adminThemes = [ { name: 'Default', id: 'default', colors: ['#2c3e50', '#e74c3c', '#3498db'] }, { name: 'Crimson', id: 'crimson', colors: ['#4a0e0e', '#c0392b', '#e74c3c'] }, { name: 'Forest', id: 'forest', colors: ['#1e3d2a', '#27ae60', '#16a085'] }, { name: 'Royal', id: 'royal', colors: ['#2c1d3c', '#8e44ad', '#9b59b6'] }, { name: 'Ocean', id: 'ocean', colors: ['#154264', '#3498db', '#5dade2'] }, { name: 'Graphite', id: 'graphite', colors: ['#34495e', '#7f8c8d', '#95a5a6'] }, { name: 'Sunrise', id: 'sunrise', colors: ['#c85a04', '#e67e22', '#f39c12'] }, { name: 'Violet', id: 'violet', colors: ['#483D8B', '#6A5ACD', '#9370DB'] } ];
+        function setupAdminTheming() { const selector = document.getElementById('admin-theme-selector'); selector.innerHTML = adminThemes.map(theme => `<div class="theme-swatch" data-theme-id="${theme.id}"><div class="colors">${theme.colors.map(c => `<div class="color-dot" style="background-color:${c}"></div>`).join('')}</div><span>${theme.name}</span></div>`).join(''); selector.querySelectorAll('.theme-swatch').forEach(swatch => { swatch.addEventListener('click', () => { pendingAdminTheme = { mode: 'preset', id: swatch.dataset.themeId }; previewAdminTheme(pendingAdminTheme); }); }); document.querySelectorAll('#admin-manual-theme-editor input[type="color"]').forEach(input => { input.addEventListener('input', () => { const customColors = {}; document.querySelectorAll('#admin-manual-theme-editor input[type="color"]').forEach(inp => { customColors[inp.dataset.var] = inp.value; }); pendingAdminTheme = { mode: 'custom', colors: customColors }; previewAdminTheme(pendingAdminTheme); }); }); document.getElementById('save-admin-theme-btn').addEventListener('click', () => { localStorage.setItem('adminTheme', JSON.stringify(pendingAdminTheme)); showStatus('Admin theme preferences saved!', 'success'); }); document.getElementById('reset-admin-theme-btn').addEventListener('click', () => { const defaultTheme = { mode: 'preset', id: 'default' }; pendingAdminTheme = defaultTheme; previewAdminTheme(defaultTheme); localStorage.setItem('adminTheme', JSON.stringify(defaultTheme)); showStatus('Admin theme reset to default.', 'info'); }); }
+        function previewAdminTheme(theme) { document.body.style.cssText = document.body.style.cssText.split(';').filter(s => !s.trim().startsWith('--')).join(';'); if (theme.mode === 'preset') { document.body.dataset.adminTheme = theme.id; } else if (theme.mode === 'custom') { document.body.dataset.adminTheme = 'default'; for (const [key, value] of Object.entries(theme.colors)) { document.body.style.setProperty(key, value); } } updateActiveThemeSwatch(theme); }
+        function loadAdminTheme() { let savedTheme; try { savedTheme = JSON.parse(localStorage.getItem('adminTheme')); if (!savedTheme) { savedTheme = { mode: 'preset', id: 'default' }; } } catch (e) { savedTheme = { mode: 'preset', id: 'default' }; } pendingAdminTheme = savedTheme; previewAdminTheme(savedTheme); setupAdminTheming(); if (savedTheme.mode === 'custom' && savedTheme.colors) { for (const [key, value] of Object.entries(savedTheme.colors)) { const input = document.querySelector(`#admin-manual-theme-editor input[data-var="${key}"]`); if (input) { input.value = value; input.parentElement.style.backgroundColor = value; } } } }
+        function updateActiveThemeSwatch(theme) { const themeId = theme.mode === 'preset' ? theme.id : null; document.querySelectorAll('#admin-theme-selector .theme-swatch').forEach(s => { s.classList.toggle('active', s.dataset.themeId === themeId); }); }
+        
+        async function backupData() { showStatus('Generating backup...','info'); const collections=['artworks','orders','siteSettings','customSections', 'coupons', 'paymentMethods']; const backup={}; for(const name of collections){backup[name] = (await db.collection(name).get()).docs.map(doc=>({id:doc.id, ...doc.data()}))} const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'})); a.download=`arrty-backup-${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(a.href); showStatus('Backup downloaded!','success'); }
+        async function restoreData() { const fileInput = document.getElementById('restore-file-input'); if (fileInput.files.length === 0) { return showStatus('Please select a backup file.', 'error'); } const file = fileInput.files[0]; const confirmation = prompt(`Type "RESTORE" to confirm overwriting all database data. This action cannot be undone.`); if (confirmation !== 'RESTORE') { return showStatus('Restore cancelled.', 'info'); } const reader = new FileReader(); reader.onload = async (event) => { try { const backup = JSON.parse(event.target.result); showStatus('Restoring... Please wait.', 'info'); for (const collectionName in backup) { const collectionData = backup[collectionName]; if (Array.isArray(collectionData)) { const batch = db.batch(); collectionData.forEach(docObject => { const docId = docObject.id; const docData = { ...docObject }; delete docData.id; batch.set(db.collection(collectionName).doc(docId), docData); }); await batch.commit(); } } showStatus('Restore complete! Please refresh.', 'success'); } catch (e) { showStatus(`Restore failed: ${e.message}`, 'error'); console.error(e); } }; reader.readAsText(file); }
+
+        // --- ACCOUNT SETTINGS & CUSTOM 2FA FUNCTIONS (100% SECURE VERSION) ---
+        function verifyTwoFactor() {
+            let isValid = true;
+            if (currentSecurityData.pinEnabled) {
+                if (document.getElementById('verify-pin-input').value !== currentSecurityData.pin) isValid = false;
+            }
+            if (currentSecurityData.otpEnabled) {
+                if (document.getElementById('verify-otp-input').value !== expectedOTP) isValid = false;
+            }
+
+            if (isValid) {
+                completeLoginFlow();
+            } else {
+                document.getElementById('login-error').textContent = "Incorrect PIN or OTP.";
+                document.getElementById('login-error').style.display = 'block';
+            }
+        }
+
+        function sendOTP(otpCode, emailAddress) {
+            emailjs.init("4SxDOYmdLl9btHf3G"); 
+            emailjs.send(
+                "service_gkkoqqs",   
+                "template_jea2xox",  
+                {
+                    to_email: emailAddress,
+                    otp_code: otpCode,
+                    company_name: "Pak Official Panel"
+                }
+            ).then(
+                function(response) { console.log("OTP Email Sent Successfully!"); }, 
+                function(error) { console.error("OTP Email Failed...", error); alert(`Failed to send OTP email: ${error.text || 'Check settings'}`); }
+            );
+        }
+
+        async function updateAdminCredentials() {
+            const user = auth.currentUser;
+            const currentPass = document.getElementById('current-admin-password').value;
+            const newEmail = document.getElementById('new-admin-email').value.trim();
+            const newPass = document.getElementById('new-admin-password').value;
+
+            // 1. Validation Checks
+            if (!currentPass) {
+                return showStatus("You must enter your Current Password to save changes.", "error");
+            }
+            if (!newEmail && !newPass) {
+                return showStatus("No new email or password entered.", "info");
+            }
+
+            try {
+                showStatus("Verifying identity...", "info");
+                
+                // 2. Re-authenticate the user securely (Fixes recent-login error 100%)
+                const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPass);
+                await user.reauthenticateWithCredential(credential);
+
+                let emailUpdated = false;
+                let passUpdated = false;
+
+                // 3. Process Email Change
+                if (newEmail && newEmail !== user.email) {
+                    await user.updateEmail(newEmail);
+                    emailUpdated = true;
+                }
+                
+                // 4. Process Password Change
+                if (newPass) {
+                    if (newPass.length < 6) throw new Error("Password must be at least 6 characters.");
+                    await user.updatePassword(newPass);
+                    passUpdated = true;
+                }
+
+                // 5. Show success and clear the fields
+                let msg = [];
+                if (emailUpdated) msg.push("Email");
+                if (passUpdated) msg.push("Password");
+                
+                showStatus(`${msg.join(" and ")} updated successfully!`, 'success');
+                
+                // Reset inputs
+                document.getElementById('current-admin-password').value = '';
+                document.getElementById('new-admin-email').value = '';
+                document.getElementById('new-admin-password').value = '';
+
+            } catch (error) {
+                console.error("Credential Update Error:", error);
+                if (error.code === 'auth/wrong-password') {
+                    showStatus("Current password is incorrect.", "error");
+                } else if (error.code === 'auth/email-already-in-use') {
+                    showStatus("That new email is already registered to another account.", "error");
+                } else if (error.code === 'auth/invalid-email') {
+                    showStatus("The new email address format is invalid.", "error");
+                } else {
+                    showStatus(error.message, "error");
+                }
+            }
+        }
+
+        async function load2FASettingsUI() {
+            try {
+                const secDoc = await db.collection('adminSettings').doc('security').get();
+                if(secDoc.exists) {
+                    const data = secDoc.data();
+                    document.getElementById('toggle-admin-pin').checked = data.pinEnabled || false;
+                    document.getElementById('admin-pin-input').value = data.pin || '';
+                    document.getElementById('toggle-email-otp').checked = data.otpEnabled || false;
+                    document.getElementById('secondary-otp-email').value = data.secondaryEmail || '';
+                }
+            } catch(e) {}
+        }
+
+        function save2FASettings() {
+            const pinEnabled = document.getElementById('toggle-admin-pin').checked;
+            const otpEnabled = document.getElementById('toggle-email-otp').checked;
+            const pin = document.getElementById('admin-pin-input').value;
+            const secEmail = document.getElementById('secondary-otp-email').value;
+
+            if (pinEnabled && pin.length < 4) return showStatus("PIN must be at least 4 characters", "error");
+
+            db.collection('adminSettings').doc('security').set({
+                pinEnabled, pin, otpEnabled, secondaryEmail: secEmail
+            }).then(() => {
+                showStatus('2FA Settings Saved & Activated', 'success');
+                currentSecurityData = { pinEnabled, pin, otpEnabled, secondaryEmail: secEmail };
+            }).catch(e => showStatus(e.message, 'error'));
+        }
+        // --- NEW: LOGIN HISTORY TRACKING (WITH GEOLOCATION) ---
+
+function loadLoginHistory() {
+    const table = document.getElementById('login-history-table');
+    db.collection('loginHistory').orderBy('timestamp', 'desc').limit(50).get().then(snap => {
+        table.innerHTML = '';
+        if (snap.empty) { table.innerHTML = '<tr><td colspan="4">No logins found.</td></tr>'; return; }
+        snap.forEach(doc => {
+            const d = doc.data();
+            const time = d.timestamp ? d.timestamp.toDate().toLocaleString() : 'Just now';
+            
+            // Clean up the device name
+            let device = "Unknown Device";
+            if (d.device.includes("Win")) device = "Windows PC";
+            if (d.device.includes("Mac")) device = "Mac";
+            if (d.device.includes("iPhone") || d.device.includes("iPad")) device = "iOS Device";
+            if (d.device.includes("Android")) device = "Android Device";
+            
+            // Get location (fallback if it's an old login before we added this feature)
+            const loc = d.location || "Unknown Location";
+            
+            // Add the new column to the table row
+            table.innerHTML += `
+                <tr>
+                    <td>${time}</td>
+                    <td><strong>${d.email}</strong></td>
+                    <td style="font-size: 0.85em; color: var(--secondary);">${device} <br><span style="font-size: 0.8em; color: #888;">${d.device}</span></td>
+                    <td style="font-weight: 500; color: var(--accent);"><i class="fas fa-map-marker-alt"></i> ${loc}</td>
+                </tr>`;
+        });
+    });
+}
+    </script>
+    
+</body>
+</html>

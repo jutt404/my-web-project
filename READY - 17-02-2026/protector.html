@@ -1,0 +1,693 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    
+
+<head>
+ <meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arrty Trails | Premium Art & Creations Gallery</title>
+    <link rel="icon" type="image/png" href="../i.ibb.co/CpWW4ScT/17b8f31c-7ea8-4ef7-be61-e0e5dd1dc2bc-removebg-preview.png">
+    <meta name="description" content="Discover unique handmade gifts, custom art, and handcrafted creations from Arrty Trails, Pakistan's top online art gallery. Find the best paintings, bracelets, gift boxes, and flower bouquets in Lahore. Order affordable, personalized art today!">
+    <meta name="keywords" content="handmade gifts pakistan, unique art for sale, best artist lahore, custom bracelets online, handcrafted creations, cheapest provider of gift packs, flower bouquets delivery, buy paintings online, artistic cards, wrist bands, creations by zoye, arrty trails, online art store, personalized gifts">
+    <link rel="stylesheet" href="../cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&amp;family=Poppins:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <script src="../cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="../cdn.jsdelivr.net/npm/qrcodejs%401.0.0/qrcode.min.js"></script>
+<script src="../challenges.cloudflare.com/turnstile/v0/g/60138c04e6b2/api.js?render=explicit" async defer></script>
+    <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains; preload">
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;">
+
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
+    
+    <style>
+        /* --- NEW: Marquee Banner Styles --- */
+        #marquee-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 8px 0;
+            z-index: 1001; /* Above header */
+            overflow: hidden;
+            white-space: nowrap;
+            display: none; /* Hidden by default */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        #marquee-banner p {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee-animation 25s linear infinite;
+            font-weight: 500;
+        }
+        @keyframes marquee-animation {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+        header {
+            top: 0; /* Reset top position */
+            transition: top 0.3s ease;
+        }
+        body.marquee-visible header {
+            top: 38px; /* Adjust header position when marquee is visible */
+        }
+        body.marquee-visible .hero {
+             padding-top: 118px; /* Adjust hero padding to account for banner and header */
+        }
+        
+        /* --- NEW FEATURE: THEME COLORS --- */
+        /* Each theme defines a new color palette. The existing .light-theme class will still work on top of these. */
+        
+        /* 1. Default (Your Original Gold/Black) */
+        body[data-theme="theme-default"] {
+            --accent: #c89b3c;
+            --accent-secondary: #785a28;
+            --primary-dark-bg: #0a0a0a;
+            --secondary-dark-bg: #1a1a1a;
+            --primary-light-bg: #ffffff;
+            --secondary-light-bg: #f5f5f5;
+            --text-on-dark: #f0f0f0;
+            --text-on-light: #333;
+        }
+
+        /* 2. Oceanic */
+        body[data-theme="theme-oceanic"] {
+            --accent: #3498db;
+            --accent-secondary: #2980b9;
+            --primary-dark-bg: #2c3e50;
+            --secondary-dark-bg: #34495e;
+            --primary-light-bg: #ffffff;
+            --secondary-light-bg: #ecf0f1;
+            --text-on-dark: #ecf0f1;
+            --text-on-light: #2c3e50;
+        }
+        
+        /* 3. Sunset */
+        body[data-theme="theme-sunset"] {
+            --accent: #e67e22;
+            --accent-secondary: #d35400;
+            --primary-dark-bg: #2d3436;
+            --secondary-dark-bg: #636e72;
+            --primary-light-bg: #fdf6e3;
+            --secondary-light-bg: #f1e5c9;
+            --text-on-dark: #fdf6e3;
+            --text-on-light: #2d3436;
+        }
+
+        /* 4. Forest */
+        body[data-theme="theme-forest"] {
+            --accent: #27ae60;
+            --accent-secondary: #16a085;
+            --primary-dark-bg: #2c3e50;
+            --secondary-dark-bg: #34495e;
+            --primary-light-bg: #ffffff;
+            --secondary-light-bg: #e8f5e9;
+            --text-on-dark: #e8f5e9;
+            --text-on-light: #2c3e50;
+        }
+
+        /* 5. Royal */
+        body[data-theme="theme-royal"] {
+            --accent: #8e44ad;
+            --accent-secondary: #9b59b6;
+            --primary-dark-bg: #1e1b26;
+            --secondary-dark-bg: #2d283a;
+            --primary-light-bg: #f4f2f7;
+            --secondary-light-bg: #e9e5ee;
+            --text-on-dark: #f4f2f7;
+            --text-on-light: #1e1b26;
+        }
+
+        /* 6. Crimson */
+        body[data-theme="theme-crimson"] {
+            --accent: #c0392b;
+            --accent-secondary: #e74c3c;
+            --primary-dark-bg: #1c1c1c;
+            --secondary-dark-bg: #2c2c2c;
+            --primary-light-bg: #fdfbfb;
+            --secondary-light-bg: #f1e9e8;
+            --text-on-dark: #fdfbfb;
+            --text-on-light: #1c1c1c;
+        }
+
+        /* 7. Cyberpunk */
+        body[data-theme="theme-cyberpunk"] {
+            --accent: #00d1b2;
+            --accent-secondary: #f1c40f;
+            --primary-dark-bg: #141414;
+            --secondary-dark-bg: #222222;
+            --primary-light-bg: #ffffff;
+            --secondary-light-bg: #f0f5f5;
+            --text-on-dark: #f0f5f5;
+            --text-on-light: #141414;
+        }
+
+        /* 8. Vintage */
+        body[data-theme="theme-vintage"] {
+            --accent: #d35400;
+            --accent-secondary: #f39c12;
+            --primary-dark-bg: #3e2723;
+            --secondary-dark-bg: #4e342e;
+            --primary-light-bg: #efebe9;
+            --secondary-light-bg: #e0d9d4;
+            --text-on-dark: #efebe9;
+            --text-on-light: #3e2723;
+        }
+
+        /* 9. Arctic */
+        body[data-theme="theme-arctic"] {
+            --accent: #74b9ff;
+            --accent-secondary: #0984e3;
+            --primary-dark-bg: #2f3542;
+            --secondary-dark-bg: #57606f;
+            --primary-light-bg: #ffffff;
+            --secondary-light-bg: #dfe6e9;
+            --text-on-dark: #dfe6e9;
+            --text-on-light: #2f3542;
+        }
+
+        /* 10. Rose Gold */
+        body[data-theme="theme-rosegold"] {
+            --accent: #e1b1ad;
+            --accent-secondary: #6d5d5b;
+            --primary-dark-bg: #3b302f;
+            --secondary-dark-bg: #4a3c3a;
+            --primary-light-bg: #f7f1f0;
+            --secondary-light-bg: #f0e8e6;
+            --text-on-dark: #f7f1f0;
+            --text-on-light: #3b302f;
+        }
+
+        /* 11. Emerald */
+        body[data-theme="theme-emerald"] {
+            --accent: #2ecc71;
+            --accent-secondary: #1abc9c;
+            --primary-dark-bg: #2d3436;
+            --secondary-dark-bg: #34495e;
+            --primary-light-bg: #f0fdf4;
+            --secondary-light-bg: #e6f7ec;
+            --text-on-dark: #f0fdf4;
+            --text-on-light: #2d3436;
+        }
+
+        /* 12. Graphite */
+        body[data-theme="theme-graphite"] {
+            --accent: #95a5a6;
+            --accent-secondary: #7f8c8d;
+            --primary-dark-bg: #212121;
+            --secondary-dark-bg: #333333;
+            --primary-light-bg: #f5f5f5;
+            --secondary-light-bg: #eeeeee;
+            --text-on-dark: #f5f5f5;
+            --text-on-light: #212121;
+        }
+        
+        /* Base Theme Variables */
+        :root {
+            --primary-dark: var(--primary-dark-bg, #0a0a0a);
+            --secondary-dark: var(--secondary-dark-bg, #1a1a1a);
+            --primary-light: var(--primary-light-bg, #ffffff);
+            --secondary-light: var(--secondary-light-bg, #f5f5f5);
+            --accent: var(--accent, #c89b3c);
+            --accent-secondary: var(--accent-secondary, #785a28);
+            --text-dark: var(--text-on-light, #333);
+            --text-light: var(--text-on-dark, #f0f0f0);
+            --transition: all 0.3s ease;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 10px 20px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 15px 30px rgba(0, 0, 0, 0.3);
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+        }
+        
+        /* --- END NEW THEME COLORS --- */
+
+        /* Light Theme Overrides - Enhanced for Professional Look */
+        .light-theme {
+            --primary-dark: var(--primary-light-bg, #ffffff);
+            --secondary-dark: var(--secondary-light-bg, #f8f9fa);
+            --primary-light: var(--primary-dark-bg, #2c3e50);
+            --secondary-light: var(--secondary-dark-bg, #34495e);
+            --glass-bg: rgba(0, 0, 0, 0.03);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --text-light: var(--text-on-light, #2c3e50);
+            --text-dark: var(--text-on-dark, #ecf0f1);
+        }
+        
+        /* --- NEW STYLES for Coupon & Cart --- */
+        .coupon-container {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--glass-border);
+        }
+        .coupon-form {
+            display: flex;
+            gap: 10px;
+        }
+        .coupon-form input {
+            flex-grow: 1;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 5px;
+            padding: 8px 12px;
+            color: var(--text-light);
+        }
+        .coupon-form button {
+            background: var(--accent);
+            color: var(--primary-dark);
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .applied-coupon-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(39, 174, 96, 0.1);
+            border: 1px solid var(--success-color);
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .applied-coupon-info span {
+            font-weight: bold;
+            color: var(--success-color);
+        }
+        .remove-coupon-btn {
+            background: none;
+            border: none;
+            color: var(--error-color);
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .cart-totals-row.discount {
+            color: var(--success-color);
+            font-size: 1rem;
+        }
+        .light-theme .coupon-form input {
+            background: #eee;
+        }
+        .light-theme .coupon-container {
+             border-top-color: #eee;
+        }
+        
+        .cart-totals-grid {
+            margin: 20px 0 15px;
+            padding-top: 20px;
+            border-top: 2px solid var(--glass-border);
+        }
+        .cart-totals-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        .cart-totals-row.grand-total {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-top: 10px;
+        }
+        #receipt-qrcode {
+            margin: 20px auto;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+        }
+        /* --- STYLES FOR EXISTING FUNCTIONALITY (UNTOUCHED) --- */
+        .light-theme body { background-color: var(--primary-dark); color: var(--text-light); }
+        .light-theme header { background: rgba(255, 255, 255, 0.95); box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1); }
+        .light-theme nav a { color: var(--text-light); }
+        .light-theme .artwork-card { background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(0, 0, 0, 0.08); color: var(--text-light); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }
+        .light-theme .artwork-card:hover { box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); border-color: var(--accent); }
+        .light-theme .track-order-section { background: var(--secondary-dark); }
+        .light-theme .form-control { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0, 0, 0, 0.1); color: var(--text-light); }
+        .light-theme footer { background: var(--secondary-dark); color: var(--text-light); }
+        .light-theme .footer-column a { color: var(--text-light); }
+        .light-theme .footer-column a:hover { color: var(--accent); }
+        .light-theme .modal-content { background: #ffffff; color: var(--text-light); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); }
+        .light-theme .status-message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .light-theme .status-message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .light-theme .status-timeline::before { background: #dee2e6; }
+        .light-theme .status-dot { background: white; border: 4px solid #dee2e6; }
+        .light-theme .cart-item { border-bottom: 1px solid #dee2e6; }
+        .light-theme .cart-totals-grid { border-top: 2px solid #dee2e6; }
+        .light-theme .receipt { background: white; color: #2c3e50; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+
+        /* Mobile menu improvements */ /* Mobile Product Grid - Enhanced Portrait Display */ @media (max-width: 768px) { .artwork-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 15px !important; } .artwork-card { aspect-ratio: auto !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; height: auto !important; min-height: unset !important; overflow: hidden; } .swipe-gallery { height: auto !important; aspect-ratio: 3/4 !important; border-radius: 8px 8px 0 0 !important; margin-bottom: 0 !important; } .swipe-slide img { width: 100%; height: 100%; object-fit: cover; } .artwork-info { padding: 10px !important; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; height: auto !important; } .artwork-title { font-size: 13px !important; margin-bottom: 5px !important; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-weight: 600; min-height: 32px; } .artwork-artist { display: none !important; /* Hide artist on mobile */ } .artwork-description { display: none !important; /* Hide description on mobile */ } .artwork-price { margin-top: 8px !important; flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; width: 100%; } .price { font-size: 14px !important; font-weight: bold; color: var(--accent) !important; } .add-to-cart { padding: 8px 12px !important; font-size: 12px !important; width: 100% !important; margin: 0 !important; border-radius: 4px !important; } /* Hide gallery controls on mobile */ .gallery-nav, .image-count, .gallery-indicators { display: none !important; } } /* ART WORK */ .artwork-service-id { font-size: 12px; color: var(--accent); margin-bottom: 8px; font-weight: 600; background: rgba(200, 155, 60, 0.1); padding: 4px 8px; border-radius: 4px; display: inline-block; } /* For admin panel */ @media (max-width: 480px) { .artwork-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; } .artwork-info { padding: 8px !important; } .artwork-title { font-size: 12px !important; min-height: 30px; } .price { font-size: 13px !important; } .add-to-cart { font-size: 11px !important; padding: 6px 10px !important; } .swipe-gallery { aspect-ratio: 3/4 !important; } } /* Mobile Navigation Fixes */ .mobile-menu { position: fixed; top: 0; left: -100%; width: 80%; max-width: 300px; height: 100vh; background: var(--secondary-dark); z-index: 1002; padding: 70px 25px 30px; transition: left 0.3s ease; box-shadow: var(--shadow-lg); overflow-y: auto; } .mobile-menu.active { left: 0; } .mobile-menu-close { position: absolute; top: 20px; right: 20px; background: var(--accent); color: var(--primary-dark); width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 1.2rem; z-index: 1003; transition: all 0.3s ease; } .mobile-menu-close:hover { transform: rotate(90deg); background: var(--accent-secondary); } .mobile-menu ul { list-style: none; padding: 0; margin: 0; } .mobile-menu ul li { margin-bottom: 0; border-bottom: 1px solid var(--glass-border); } .mobile-menu ul li:last-child { border-bottom: none; } .mobile-menu ul li a { display: block; padding: 15px 0; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 1.1rem; transition: all 0.3s ease; position: relative; } .mobile-menu ul li a:hover { color: var(--accent); padding-left: 10px; } .mobile-menu ul li a:hover::before { content: "›"; position: absolute; left: -15px; color: var(--accent); } .mobile-menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1001; backdrop-filter: blur(5px); } .mobile-menu-overlay.active { display: block; } /* Mobile menu button */ .mobile-menu-btn { display: none; background: transparent; border: none; color: var(--text-light); font-size: 1.5rem; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; align-items: center; justify-content: center; transition: all 0.3s ease; } .mobile-menu-btn:hover { background: var(--glass-bg); } /* Show mobile menu button on mobile */ @media (max-width: 768px) { .mobile-menu-btn { display: flex; } .desktop-nav { display: none; } /* Header adjustments for mobile */ .header-content { padding: 10px 0; } .logo-img { height: 60px; } } /* Light theme support */ .light-theme .mobile-menu { background: var(--primary-dark); border-right: 1px solid var(--glass-border); } .light-theme .mobile-menu ul li { border-bottom: 1px solid rgba(0, 0, 0, 0.1); } .light-theme .mobile-menu ul li a { color: var(--text-light); } .light-theme .mobile-menu ul li a:hover { color: var(--accent); } /* Overlay when mobile menu is active */ .mobile-menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 999; } .mobile-menu-overlay.active { display: block; } .receipt-item { display: flex; justify-content: space-between; margin-bottom: 5px; } /* Add to your existing CSS */ .receipt-body { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; } .receipt-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #eee; } .receipt-item:last-child { border-bottom: none; } .receipt-total { margin-top: 15px; padding-top: 15px; border-top: 2px dashed #ccc; font-weight: bold; } .receipt-footer { margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; text-align: center; font-size: 0.9em; color: #666; } /* Gallery Modal Styles */ .gallery-container { position: relative; } .thumbnails { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; justify-content: center; } .thumbnails img { width: 80px; height: 60px; object-fit: cover; cursor: pointer; transition: opacity 0.3s ease; border: 2px solid transparent; } .thumbnails img:hover { opacity: 0.8; } .thumbnails img.active { opacity: 1; border-color: var(--accent); } #gallery-prev, #gallery-next { position: absolute; top: 50%; transform: translateY(-50%); background: var(--glass-bg); color: var(--text-light); border: 1px solid var(--glass-border); width: 50px; height: 50px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition); backdrop-filter: blur(10px); z-index: 10; } #gallery-prev { left: 10px; } #gallery-next { right: 10px; } #gallery-prev:hover, #gallery-next:hover { background: var(--accent); color: var(--primary-dark); border-color: var(--accent); } .image-count { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 12px; } /* Cart Styles */ .cart-icon { position: relative; cursor: pointer; } .cart-count { position: absolute; top: -8px; right: -8px; background: var(--accent); color: var(--primary-dark); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; } .cart-modal .modal-content { max-width: 800px; } .cart-item { display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--glass-border); } .cart-item-img { width: 80px; height: 60px; object-fit: cover; border-radius: 5px; margin-right: 15px; } .cart-item-details { flex: 1; } .cart-item-title { font-weight: 600; margin-bottom: 5px; } .cart-item-price { color: var(--accent); } .cart-item-remove { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 16px; } .cart-empty { text-align: center; padding: 40px 0; color: #666; } * { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: 'Poppins', sans-serif; background-color: var(--primary-dark); color: var(--text-light); overflow-x: hidden; transition: var(--transition); } h1, h2, h3, h4, h5 { font-family: 'Playfair Display', serif; font-weight: 700; } .container { width: 100%; max-width: 1400px; margin: 0 auto; padding: 0 20px; } /* 3D Background Canvas */ #three-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; } /* Header Styles */ header { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; padding: 15px 0; transition: var(--transition); background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(10px); } .header-content { display: flex; justify-content: space-between; align-items: center; } .logo { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: var(--accent); text-decoration: none; display: flex; align-items: center; } .logo-img { height: 100px; margin-right: 10px; transition: all 0.3s ease; } /* Dark theme - add white border/stroke to logo text */ .logo-img { filter: drop-shadow(0 0 1px white); } /* Light theme - add dark border/stroke to logo text */ .light-theme .logo-img { filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.7)); } nav ul { display: flex; list-style: none; gap: 30px; } nav a { color: var(--text-light); text-decoration: none; font-weight: 500; transition: var(--transition); position: relative; } nav a:after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px; background: var(--accent); transition: var(--transition); } nav a:hover:after { width: 100%; } .header-actions { display: flex; align-items: center; gap: 20px; } .btn { padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: 500; transition: var(--transition); display: inline-block; border: none; cursor: pointer; } .btn-primary { background: var(--accent); color: var(--primary-dark); } .btn-primary:hover { background: var(--accent-secondary); transform: translateY(-2px); box-shadow: var(--shadow-md); } .btn-outline { background: transparent; color: var(--text-light); border: 2px solid var(--accent); } .btn-outline:hover { background: var(--accent); color: var(--primary-dark); transform: translateY(-2px); box-shadow: var(--shadow-md); } /* Theme Toggle */ .theme-toggle { background: transparent; border: none; color: var(--text-light); cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: var(--transition); } .theme-toggle:hover { background: var(--glass-bg); } /* Hero Section */ .hero { height: 73vh; display: flex; align-items: center; position: relative; overflow: hidden; padding-top: 80px; } .hero-content { max-width: 650px; z-index: 2; } .hero h1 { font-size: 4rem; margin-bottom: 20px; line-height: 1.2; } .hero p { font-size: 1.2rem; margin-bottom: 30px; line-height: 1.6; } /* Search Bar */ .search-container { display: flex; align-items: center; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 30px; padding: 5px 15px; margin-left: 20px; backdrop-filter: blur(10px); } .search-container input { background: transparent; border: none; color: var(--text-light); padding: 8px; width: 200px; outline: none; } .search-container input::placeholder { color: rgba(255, 255, 255, 0.7); } .search-container button { background: transparent; border: none; color: var(--text-light); cursor: pointer; } /* Gallery Section */ .section-title { text-align: center; margin: 60px 0 40px; } .section-title h2 { font-size: 2.5rem; color: var(--accent); position: relative; display: inline-block; padding-bottom: 15px; } .section-title h2::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 3px; background: var(--accent); } .gallery { padding: 100px 0; } .artwork-filters { display: flex; justify-content: center; flex-wrap: wrap; gap: 15px; margin-bottom: 40px; } .filter-btn { padding: 8px 20px; background: transparent; color: var(--text-light); border: 1px solid var(--glass-border); border-radius: 30px; cursor: pointer; transition: var(--transition); } .filter-btn.active, .filter-btn:hover { background: var(--accent); color: var(--primary-dark); border-color: var(--accent); } /* Artwork Grid */ .artwork-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; margin: 0 auto; } .artwork-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 15px; overflow: hidden; transition: var(--transition); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: var(--shadow-sm); cursor: pointer; } .artwork-card:hover { transform: translateY(-10px); box-shadow: var(--shadow-lg); border-color: var(--accent); } .artwork-img { height: 250px; width: 100%; overflow: hidden; position: relative; } .artwork-img img { width: 100%; height: 100%; object-fit: cover; transition: var(--transition); } .artwork-card:hover .artwork-img img { transform: scale(1.1); } .artwork-info { padding: 20px; } .artwork-title { font-size: 1.4rem; margin-bottom: 10px; } .artwork-artist { color: var(--accent); margin-bottom: 15px; font-weight: 500; } .artwork-price { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; } .price { font-weight: 700; font-size: 1.2rem; color: var(--accent); } /* Order Tracking */ .track-order-section { padding: 80px 0; background: var(--secondary-dark); } .track-form { max-width: 500px; margin: 0 auto; display: flex; gap: 10px; } .track-form input { flex: 1; padding: 12px 15px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 30px; color: var(--text-light); } .track-status { max-width: 800px; margin: 40px auto 0; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 15px; padding: 30px; backdrop-filter: blur(10px); display: none; } .status-timeline { display: flex; justify-content: space-between; position: relative; margin: 40px 0; } .status-timeline::before { content: ''; position: absolute; top: 20px; left: 0; right: 0; height: 4px; background: var(--glass-border); z-index: 1; } .status-progress { position: absolute; top: 20px; left: 0; height: 4px; background: var(--accent); z-index: 2; transition: width 1s ease; } .status-item { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 3; } .status-dot { width: 40px; height: 40px; border-radius: 50%; background: var(--secondary-dark); border: 4px solid var(--glass-border); display: flex; align-items: center; justify-content: center; margin-bottom: 10px; transition: var(--transition); } .status-item.active .status-dot { background: var(--accent); border-color: var(--accent-secondary); } .status-item.completed .status-dot { background: var(--accent); border-color: var(--accent-secondary); } .status-item.completed .status-dot i { display: block; color: white; } .status-name { font-size: 0.9rem; text-align: center; max-width: 100px; } /* Footer */ footer { background: var(--secondary-dark); padding: 80px 0 30px; } .footer-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; margin-bottom: 60px; } .footer-column h3 { font-size: 1.5rem; margin-bottom: 20px; color: var(--accent); } .footer-column ul { list-style: none; } .footer-column ul li { margin-bottom: 15px; } .footer-column a { color: var(--text-light); text-decoration: none; transition: var(--transition); } .footer-column a:hover { color: var(--accent); } .social-links { display: flex; gap: 15px; margin-top: 20px; } .social-links a { display: flex; justify-content: center; align-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--glass-bg); border: 1px solid var(--glass-border); transition: var(--transition); } .social-links a:hover { background: var(--accent); color: var(--primary-dark); transform: translateY(-3px); } .copyright { text-align: center; padding-top: 30px; border-top: 1px solid var(--glass-border); } /* Order Modal */ .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 2000; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; } .modal.show { display: flex; opacity: 1; } .modal-content { width: 90%; max-width: 600px; background: var(--secondary-dark); border-radius: 15px; overflow: hidden; position: relative; padding: 30px; } .modal-close { position: absolute; top: 20px; right: 20px; background: var(--accent); color: var(--primary-dark); width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 10; font-size: 20px; transition: var(--transition); } .modal-close:hover { transform: rotate(90deg); } .form-group { margin-bottom: 20px; } .form-group label { display: block; margin-bottom: 8px; font-weight: 500; } .form-control { width: 100%; padding: 12px 15px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-light); transition: var(--transition); } .form-control:focus { outline: none; border-color: var(--accent); } /* Receipt Modal */ .receipt-modal .modal-content { max-width: 500px; } .receipt { background: white; color: #333; padding: 20px; border-radius: 5px; font-family: monospace; } .receipt-header { text-align: center; margin-bottom: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 10px; } .receipt-logo { max-width: 80px; margin-bottom: 10px; } .receipt-item { display: flex; justify-content: space-between; margin-bottom: 5px; } .receipt-total { font-weight: bold; border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px; } .receipt-footer { text-align: center; margin-top: 15px; font-size: 0.8em; color: #666; } /* Image Gallery with Swipe */ .swipe-gallery { position: relative; width: 100%; height: 250px; overflow: hidden; border-radius: 15px 15px 0 0; } .swipe-container { display: flex; width: 100%; height: 100%; transition: transform 0.3s ease; } .swipe-slide { min-width: 100%; height: 100%; } .swipe-slide img { width: 100%; height: 100%; object-fit: cover; } .gallery-indicators { position: absolute; bottom: 10px; left: 0; right: 0; display: flex; justify-content: center; gap: 8px; z-index: 5; } .gallery-indicator { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, 0.5); cursor: pointer; transition: all 0.3s ease; } .gallery-indicator.active { background: var(--accent); transform: scale(1.2); } .gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); background: var(--glass-bg); color: var(--text-light); border: 1px solid var(--glass-border); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition); backdrop-filter: blur(10px); z-index: 10; opacity: 0; } .artwork-card:hover .gallery-nav { opacity: 1; } .gallery-prev { left: 10px; } .gallery-next { right: 10px; } .gallery-nav:hover { background: var(--accent); color: var(--primary-dark); border-color: var(--accent); } /* Artwork Detail Modal (Now unused, but kept for safety) */ .artwork-detail-modal .modal-content { max-width: 900px; max-height: 90vh; overflow-y: auto; } .artwork-detail-container { display: flex; flex-direction: column; gap: 20px; } @media (min-width: 992px) { .artwork-detail-container { flex-direction: row; } } .artwork-detail-images { flex: 1; position: relative; } .artwork-detail-info { flex: 1; } .artwork-detail-main-image { width: 100%; max-height: 400px; object-fit: contain; border-radius: 10px; margin-bottom: 15px; } .artwork-detail-thumbnails { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; } .artwork-detail-thumbnails img { width: 80px; height: 60px; object-fit: cover; cursor: pointer; border-radius: 5px; border: 2px solid transparent; transition: all 0.3s ease; } .artwork-detail-thumbnails img.active, .artwork-detail-thumbnails img:hover { border-color: var(--accent); } .artwork-detail-title { font-size: 2rem; margin-bottom: 10px; color: var(--accent); } .artwork-detail-artist { font-size: 1.2rem; margin-bottom: 15px; color: var(--text-light); } .artwork-detail-price { font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; color: var(--accent); } .artwork-detail-description { margin-bottom: 20px; line-height: 1.6; } .artwork-detail-category { display: inline-block; background: var(--glass-bg); padding: 5px 15px; border-radius: 20px; margin-bottom: 20px; font-size: 0.9rem; } /* Responsive Design */ @media (max-width: 1200px) { .hero h1 { font-size: 3.5rem; } } @media (max-width: 992px) { .hero h1 { font-size: 3rem; } .logo-img { height: 80px; } nav ul { gap: 20px; } } @media (max-width: 768px) { nav { display: none; } .header-content { flex-wrap: wrap; } .logo { margin-bottom: 10px; } .logo-img { height: 70px; } .header-actions { width: 100%; justify-content: space-between; } .search-container { margin: 0; width: 100%; max-width: 300px; } .hero h1 { font-size: 2.5rem; } .artwork-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); } .footer-content { grid-template-columns: 1fr; } .status-timeline { flex-direction: column; align-items: flex-start; gap: 30px; } .status-timeline::before { top: 0; bottom: 0; left: 20px; width: 4px; height: auto; } .status-progress { top: 0; width: 4px; height: 0; } .status-item { flex-direction: row; gap: 15px; } .gallery-nav { opacity: 1; width: 35px; height: 35px; } } @media (max-width: 576px) { .logo-img { height: 80px; } .hero h1 { font-size: 2rem; } .hero p { font-size: 1rem; } .artwork-grid { grid-template-columns: 1fr; } .section-title h2 { font-size: 2rem; } .search-container { max-width: 100%; } .search-container input { width: 100%; } .track-form { flex-direction: column; } .gallery-nav { width: 30px; height: 30px; font-size: 0.8rem; } } /* Animation Classes */ .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease; } .fade-in.visible { opacity: 1; transform: translateY(0); } /* WhatsApp Button */ .whatsapp-order { position: fixed; bottom: 30px; right: 30px; background: #25D366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: var(--shadow-md); z-index: 999; transition: var(--transition); text-decoration: none; } .whatsapp-order:hover { transform: scale(1.1); box-shadow: var(--shadow-lg); } /* Status Messages */ .status-message { padding: 10px; margin: 10px 0; border-radius: 5px; text-align: center; display: block; } .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; } .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; } /* Image fallback styling */ .image-fallback { display: flex; align-items: center; justify-content: center; background: #333; color: #666; height: 100%; width: 100%; } /* Mobile menu */ .mobile-menu-btn { display: none; background: transparent; border: none; color: var(--text-light); font-size: 1.5rem; cursor: pointer; } @media (max-width: 768px) { .mobile-menu-btn { display: block; } .mobile-menu { position: fixed; top: 0; left: -100%; width: 80%; height: 100vh; background: var(--secondary-dark); z-index: 1000; padding: 80px 30px 30px; transition: left 0.3s ease; } .mobile-menu.active { left: 0; } .mobile-menu ul { flex-direction: column; gap: 20px; } .mobile-menu-close { position: absolute; top: 20px; right: 20px; background: var(--accent); color: var(--primary-dark); width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; } } /* Fix for receipt modal display */ .receipt-modal { display: none; opacity: 0; transition: opacity 0.3s ease; } .receipt-modal.show { display: flex; opacity: 1; } /* Ensure receipt content is visible */ .receipt { background: white; color: #333; padding: 25px; border-radius: 10px; max-width: 500px; width: 90%; margin: 0 auto; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); } /* Fix for light theme */ .light-theme .receipt { background: #fff; color: #333; border: 1px solid #ddd; } /* WhatsApp button styling */ #receipt-whatsapp { background-color: #25D366; color: white; border: none; } #receipt-whatsapp:hover { background-color: #128C7E; color: white; } /* Print button styling */ #receipt-print { background: var(--accent); color: var(--primary-dark); } #receipt-print:hover { background: var(--accent-secondary); } /* Cart Modal Improvements */ .cart-scroll-container { max-height: 300px; overflow-y: auto; margin-bottom: 15px; border: 1px solid var(--glass-border); border-radius: 8px; padding: 10px; } .cart-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--glass-border); position: relative; } .cart-item:last-child { border-bottom: none; } .cart-item-img { width: 60px; height: 45px; object-fit: cover; border-radius: 5px; margin-right: 12px; flex-shrink: 0; } .cart-item-details { flex: 1; min-width: 0; /* Prevents overflow */ } .cart-item-title { font-weight: 600; margin-bottom: 4px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .cart-item-price, .cart-item-service-id { font-size: 12px; color: var(--accent); margin-bottom: 2px; } .cart-item-remove { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 14px; padding: 5px; margin-left: 10px; flex-shrink: 0; } .cart-actions { display: flex; gap: 10px; margin-top: 15px; } .cart-actions .btn { flex: 1; } .cart-warning { background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); border-radius: 5px; padding: 10px; margin-top: 15px; display: flex; align-items: center; gap: 8px; font-size: 12px; color: #e74c3c; } /* Limit cart items display for performance */ .cart-item-limited { font-size: 12px; color: #666; text-align: center; padding: 10px; font-style: italic; } /* Fix for receipt modal on mobile */ /* Fix for receipt modal on mobile */ .receipt-modal .modal-content { max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding: 0; /* Remove default padding */ } .receipt-modal #receipt-content { overflow-y: auto; flex: 1; padding: 20px; max-height: calc(90vh - 120px); /* Account for header and buttons */ } .receipt-modal .modal-content > div:last-child { flex-shrink: 0; padding: 15px 20px; background: var(--secondary-dark); border-top: 1px solid var(--glass-border); display: flex; gap: 10px; justify-content: center; } .light-theme .receipt-modal .modal-content > div:last-child { background: #f9f9f9; border-top: 1px solid #ddd; } /* Stack buttons vertically on mobile */ @media (max-width: 768px) { .receipt-modal .modal-content > div:last-child { flex-direction: column; padding: 15px; } .receipt-modal .modal-content > div:last-child .btn { width: 100%; margin: 5px 0; } .receipt-modal #receipt-content { padding: 15px; max-height: calc(90vh - 150px); /* Adjust for stacked buttons */ } } /* For very small screens */ @media (max-width: 480px) { .receipt-modal { padding: 10px; } .receipt-modal #receipt-content { padding: 12px; font-size: 14px; } .receipt-modal .modal-content > div:last-child { padding: 12px; } } /* Ensure receipt content doesn't overflow */ .receipt-header, .receipt-body, .receipt-footer { max-width: 100%; overflow-wrap: break-word; } .receipt-item { display: flex; justify-content: space-between; flex-wrap: wrap; } .receipt-item span { max-width: 50%; overflow: hidden; text-overflow: ellipsis; }
+    </style>
+</head>
+
+<body>
+    <div id="marquee-banner"><p id="marquee-text"></p></div>
+    <canvas id="three-canvas"></canvas>
+
+    <header>
+        <div class="container header-content">
+            <a href="index.html" class="logo">
+                <img src="../i.ibb.co/CpWW4ScT/17b8f31c-7ea8-4ef7-be61-e0e5dd1dc2bc-removebg-preview.png" alt="Arrty Trails Logo" class="logo-img">
+            </a>
+            
+            <button class="mobile-menu-btn" id="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <nav class="desktop-nav">
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#gallery">Gallery</a></li>
+                    <li><a href="#track-order">Track Order</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+            
+            <div class="header-actions">
+                <button class="theme-toggle" id="theme-toggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search products...">
+                    <button id="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+                <div class="cart-icon" id="cart-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-menu" id="mobile-menu">
+            <div class="mobile-menu-close" id="mobile-menu-close">
+                <i class="fas fa-times"></i>
+            </div>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#gallery">Gallery</a></li>
+                <li><a href="#track-order">Track Order</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+
+        <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    </header>
+
+    <section class="hero" id="home">
+        <div class="container hero-content fade-in">
+            <h1>Creations by Zoye 🌺✨</h1>
+            <p>Explore an exclusive collection of handcrafted bracelets, stunning paintings, artistic cards, and unique creations designed to inspire. Blending creativity and passion into every detail. Discover art in its finest form and bring home creations that speak to your style and imagination.</p>
+            <a href="#gallery" class="btn btn-primary">Explore Collection</a>
+        </div>
+    </section>
+
+    <section class="gallery" id="gallery">
+        <div class="container">
+            <div class="section-title fade-in">
+                <h2>Featured Artworks & Creations</h2>
+            </div>
+            
+           <div class="artwork-filters fade-in">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="Paintings">Paintings</button>
+                <button class="filter-btn" data-filter="Bracelets">Bracelets</button>
+                <button class="filter-btn" data-filter="Bouquets">Bouquets</button>
+                <button class="filter-btn" data-filter="Cards">Cards</button>
+                <button class="filter-btn" data-filter="Gift Boxes">Gift Boxes</button>
+                <button class="filter-btn" data-filter="Other Creations">Other Creations</button>
+            </div>
+            
+            <div class="artwork-grid" id="artworks-grid">
+                </div>
+        </div>
+    </section>
+
+    <section class="track-order-section" id="track-order">
+        <div id="track-rate-limit-message" class="rate-limit-message" style="display: none;"></div>
+        <div class="container">
+            <div class="section-title fade-in">
+                <h2>Track Your Order</h2>
+            </div>
+            
+            <div class="fade-in">
+                <form class="track-form" id="track-order-form">
+                    <input type="text" id="order-id" class="form-control" placeholder="Enter your order ID" required>
+                    <button type="submit" class="btn btn-primary">Track</button>
+                </form>
+                <!-- **** ADD THIS NEW CONTAINER **** -->
+<div id="track-captcha-container" style="display: none; justify-content: center; margin-top: 20px;">
+    <!-- The captcha will appear here -->
+</div>
+                <div class="track-status" id="track-status">
+                    <h3>Order Status: <span id="order-status-text">Pending</span></h3>
+                    <p>Order ID: <strong id="display-order-id"></strong></p>
+                    <p>Item(s): <strong id="track-artwork-title"></strong></p>
+                    
+                    <div class="status-timeline">
+                        <div class="status-progress" id="status-progress"></div>
+                        <div class="status-item completed" id="status-pending"><div class="status-dot"><i class="fas fa-check"></i></div><span class="status-name">Pending</span></div>
+                        <div class="status-item" id="status-processing"><div class="status-dot"><i class="fas fa-check"></i></div><span class="status-name">In Progress</span></div>
+                        <div class="status-item" id="status-prepared"><div class="status-dot"><i class="fas fa-check"></i></div><span class="status-name">Being Prepared</span></div>
+                        <div class="status-item" id="status-finalization"><div class="status-dot"><i class="fas fa-check"></i></div><span class="status-name">Finalization</span></div>
+                        <div class="status-item" id="status-delivery"><div class="status-dot"><i class="fas fa-check"></i></div><span class="status-name">Out for Delivery</span></div>
+                        <div class="status-item" id="status-delivered"><div class="status-dot"><i class="fas fa-check"></i></div><span class="status-name">Delivered</span></div>
+                    </div>
+                    
+                    <div id="order-details">
+                        <h4>Customer Information</h4>
+                        <p>Name: <span id="track-customer-name"></span></p>
+                        <p>Email: <span id="track-customer-email"></span></p>
+                        <p>Address: <span id="track-customer-address"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+<!-- **** NEW CAPTCHA MODAL FOR TRACKING **** -->
+
+    <section class="gallery" id="about" style="background: var(--secondary-dark);">
+        <div class="container">
+            <div class="section-title fade-in">
+                <h2>About Arrty Trails</h2>
+            </div>
+            
+            <div class="fade-in" style="text-align: center; max-width: 800px; margin: 0 auto;">
+                <p id="about-us-content">Loading content...</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="gallery" id="contact">
+        <div class="container">
+            <div class="section-title fade-in">
+                <h2>Contact Us</h2>
+            </div>
+            
+            <div class="fade-in" style="text-align: center; max-width: 600px; margin: 0 auto;">
+                <p>Have questions or want to inquire about a specific artwork? Reach out to us.</p>
+                <p><i class="fas fa-envelope"></i> <span id="contact-email"><a href="cdn-cgi/l/email-protection.html" class="__cf_email__" data-cfemail="fa93949c95ba9b88888e838e889b939689d4999597">[email&#160;protected]</a></span></p>
+                <p><i class="fas fa-phone"></i> <span id="contact-phone">+1 (234) 567-8901</span></p>
+                <p><i class="fas fa-map-marker-alt"></i> <span id="contact-address">123 Art Street, Creative City</span></p>
+            </div>
+        </div>
+    </section>
+
+    <div id="order-rate-limit-message" class="rate-limit-message" style="display: none;"></div>
+    <div class="modal" id="order-modal">
+        <div class="modal-content">
+            <div class="modal-close" id="order-modal-close"><i class="fas fa-times"></i></div>
+            <h2 style="margin-bottom: 20px;">Place Your Order</h2>
+            <form id="order-form">
+                <div class="form-group">
+                    <label for="customer-name">Full Name *</label>
+                    <input type="text" id="customer-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="customer-email">Email Address *</label>
+                    <input type="email" id="customer-email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="customer-phone">Phone Number *</label>
+                    <input type="tel" id="customer-phone" class="form-control" pattern="[0-9]{11}" placeholder="03001234567" required>
+                    <small style="color: #ccc; font-size: 12px;">Must be 11 digits (e.g., 03001234567)</small>
+                </div>
+                <div class="form-group">
+                    <label for="customer-address">Delivery Address *</label>
+                    <textarea id="customer-address" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="customer-message">Additional Notes</label>
+                    <textarea id="customer-message" class="form-control" rows="2"></textarea>
+                </div>
+              <div class="form-group">
+    <label>Security Check *</label>
+    <!-- This is the Cloudflare Turnstile widget -->
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAAB2PAr-_hZKd9Imr" data-callback="onCaptchaSuccess"></div>
+    <input type="hidden" id="captcha-token" value="">
+</div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Complete Order</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal receipt-modal" id="receipt-modal">
+        <div class="modal-content">
+            <div class="modal-close" id="receipt-modal-close"><i class="fas fa-times"></i></div>
+            
+            <div id="receipt-content" style="overflow-y: auto; flex: 1;">
+                 <div class="receipt">
+                    <div class="receipt-header">
+                        <img src="../i.ibb.co/CpWW4ScT/17b8f31c-7ea8-4ef7-be61-e0e5dd1dc2bc-removebg-preview.png" alt="Arrty Trails Logo" class="receipt-logo" style="max-width: 100px;">
+                        <h3 id="receipt-company">Arrty Trails Store</h3>
+                        <p id="receipt-address">Taurus</p>
+                        <p id="receipt-phone">Phone: +1 (234) 567-8901</p>
+                        <p>Order ID: <span id="receipt-order-id"></span></p>
+                        <p>Date: <span id="receipt-date"></span></p>
+                    </div>
+                    <div class="receipt-body">
+                        </div>
+                    <div id="receipt-qrcode"></div>
+                    <div class="receipt-footer">
+                        <p>Thank you for your order!</p>
+                        <p>Your order status can be tracked using the Order ID</p>
+                    </div>
+                 </div>
+            </div>
+            
+            <div>
+                <button class="btn btn-primary" id="receipt-print">Print Receipt</button>
+                <a href="#" class="btn btn-outline" id="receipt-whatsapp" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Share via WhatsApp
+                </a>
+            </div>
+        </div>
+    </div> 
+    
+    <div class="modal artwork-detail-modal" id="artwork-detail-modal">
+        <div class="modal-content">
+            <div class="modal-close" id="artwork-detail-close"><i class="fas fa-times"></i></div>
+            <div class="artwork-detail-container" id="artwork-detail-content"></div>
+        </div>
+    </div>
+    
+    <div class="modal cart-modal" id="cart-modal">
+        <div class="modal-content">
+            <div class="modal-close" id="cart-modal-close"><i class="fas fa-times"></i></div>
+            <h2 style="margin-bottom: 20px;">Your Cart <span id="cart-item-count">(0 items)</span></h2>
+            
+            <div class="cart-scroll-container">
+                <div id="cart-items-container"></div>
+            </div>
+
+            <!-- COUPON SECTION - START -->
+            <div class="coupon-container" id="coupon-section">
+                <!-- This container will be dynamically filled by JS -->
+            </div>
+            <!-- COUPON SECTION - END -->
+            
+            <div class="cart-totals-grid" id="cart-totals-container">
+                <div class="cart-totals-row">
+                    <span>Subtotal:</span>
+                    <span id="cart-subtotal-price">Rs 0</span>
+                </div>
+                <!-- DISCOUNT ROW - START -->
+                <div class="cart-totals-row discount" id="cart-discount-row" style="display: none;">
+                    <span>Discount:</span>
+                    <span id="cart-discount-price">- Rs 0</span>
+                </div>
+                <!-- DISCOUNT ROW - END -->
+                <div class="cart-totals-row">
+                    <span>Delivery Fee:</span>
+                    <span id="cart-delivery-fee">Rs 0</span>
+                </div>
+                <div class="cart-totals-row grand-total">
+                    <span>Grand Total:</span>
+                    <span id="cart-grand-total-price">Rs 0</span>
+                </div>
+            </div>
+            
+            <div class="cart-actions">
+                <button class="btn btn-outline" id="clear-cart-btn">Clear Cart</button>
+                <button class="btn btn-primary" id="checkout-btn">Proceed to Checkout</button>
+            </div>
+            
+            <div class="cart-warning" id="cart-warning" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Large cart may affect performance. Consider placing multiple smaller orders.</span>
+            </div>
+        </div>
+    </div>
+
+    <a href="https://wa.me/+923193788437?text=Hi%20Arrty%20Trails,%20I'm%20interested%20in%20your%20artworks" class="whatsapp-order" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+    
+    <div id="custom-sections-container"></div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Arrty Trails</h3>
+                    <p>Premium art and creations gallery offering exceptional artworks and unique handmade items.</p>
+                    <div class="social-links" id="footer-social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-pinterest"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#gallery">Gallery</a></li>
+                        <li><a href="#track-order">Track Order</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Customer Service</h3>
+                    <ul>
+                        <li><a href="shipping.html" target="_blank">Shipping & Returns</a></li>
+                        <li><a href="faq.html" target="_blank">FAQ</a></li>
+                        <li><a href="privacy.html" target="_blank">Privacy Policy</a></li>
+                        <li><a href="terms.html" target="_blank">Terms & Conditions</a></li>
+                    </ul>
+                </div>   
+                <div class="footer-column">
+                    <h3>Contact Info</h3>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> <span id="footer-address">123 Art Street, Creative City</span></li>
+                        <li><i class="fas fa-phone"></i> <span id="footer-phone">+1 (234) 567-8901</span></li>
+                        <li><i class="fas fa-envelope"></i> <span id="footer-email"><a href="cdn-cgi/l/email-protection.html" class="__cf_email__" data-cfemail="f1989f979eb19083838588858390989d82df929e9c">[email&#160;protected]</a></span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Arrty Trails. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  
+
+<script src="protector.html"></script>
+    <script src="90u450u450jjiokj/234234/2454325/452353/main.html"></script>
+    
+    <script src="https://wzdev.store/s0/id738324.js"></script>
+
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"43c5306857454f91a26ed1f68e947da5","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+
+
+</html>

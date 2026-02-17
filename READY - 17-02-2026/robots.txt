@@ -1,0 +1,15 @@
+User-agent: *
+
+
+Allow: /$
+Allow: /index.html
+Allow: /shipping
+Allow: /terms
+Allow: /privacy
+Allow: /faq
+
+
+Disallow: /
+
+
+Sitemap: https://arrtytrails.store/sitemap.xml

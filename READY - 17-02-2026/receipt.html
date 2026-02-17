@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation | Arrty Trails</title>
+    <link rel="icon" type="image/png" href="446350655_1018834769662141_6456526233181167743_n.jpg">
+ 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600&family=Inconsolata:wght@400&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --accent: #c89b3c;
+            --text-on-dark: #f0f0f0;
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --warning-color: #f39c12;
+        }
+
+        body[data-theme="theme-default"] { --accent: #c89b3c; --text-on-dark: #f0f0f0; --glass-border: rgba(255, 255, 255, 0.1); }
+        body[data-theme="theme-oceanic"] { --accent: #3498db; --text-on-dark: #ecf0f1; --glass-border: rgba(255, 255, 255, 0.15); }
+        /* Theme colors dynamically update via JS */
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: #0a0a0a;
+            color: var(--text-on-dark); 
+            line-height: 1.6; 
+            padding: 20px; 
+        }
+        .container { max-width: 600px; margin: 40px auto; }
+        .receipt-card { 
+            background: #1a1a1a;
+            padding: 30px; 
+            border-radius: 15px; 
+            border: 1px solid var(--glass-border); 
+            text-align: center; 
+        }
+        .receipt-header { margin-bottom: 25px; }
+        .receipt-header .icon { font-size: 3rem; color: var(--accent); margin-bottom: 15px; }
+        .receipt-header h1 { font-family: 'Playfair Display', serif; color: var(--accent); font-size: 2rem; }
+        .receipt-header p { opacity: 0.8; }
+        
+        #receipt-logo {
+            filter: drop-shadow(0 0 2px white);
+            max-width: 220px;
+            max-height: 150px;
+            display: block;
+            margin: 0 auto 15px auto;
+        }
+
+        /* NEW: Payment Status Styles */
+        .payment-status-section {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid transparent;
+        }
+        .status-paid { background: rgba(39, 174, 96, 0.15); border-color: var(--success-color); }
+        .status-pending { background: rgba(243, 156, 18, 0.15); border-color: var(--warning-color); }
+        .status-unpaid { background: rgba(231, 76, 60, 0.15); border-color: var(--error-color); }
+        
+        .payment-status-section h3 { margin: 0 0 5px 0; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; gap: 8px;}
+        .status-paid h3 { color: var(--success-color); }
+        .status-pending h3 { color: var(--warning-color); }
+        .status-unpaid h3 { color: var(--error-color); }
+
+        .order-details { text-align: left; margin: 25px 0; padding: 20px; border: 1px dashed var(--glass-border); border-radius: 10px; }
+        .detail-row { display: flex; justify-content: space-between; padding: 8px 0; font-family: 'Inconsolata', monospace; }
+        .receipt-items { border-top: 1px solid var(--glass-border); padding-top: 15px; margin-top: 15px; }
+        .receipt-item { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; font-size: 0.9rem; }
+        
+        #receipt-qrcode { margin: 20px auto; padding: 10px; background: white; border-radius: 5px; display: inline-block; }
+        
+        .receipt-actions { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 25px; }
+        .btn { padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: 500; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer; }
+        .btn-primary { background: var(--accent); color: #0a0a0a; }
+        .btn-secondary { background: transparent; border: 1px solid var(--glass-border); color: var(--text-on-dark); }
+        .btn-whatsapp { background: #25D366; color: white; }
+        
+        /* Pay Now Button Style */
+        .btn-pay-now { background: var(--error-color); color: white; width: 100%; justify-content: center; margin-top: 10px; }
+        .btn-pay-now:hover { opacity: 0.9; }
+
+        @media print {
+            .receipt-actions { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="receipt-container">
+        <div class="receipt-card">
+            <div class="receipt-header">
+                <img src="" alt="Company Logo" id="receipt-logo" style="display: none;">
+                <div class="icon" id="receipt-icon"><i class="fas fa-check-circle"></i></div>
+                <p id="receipt-contact-info" style="font-size: 1.1em; line-height: 1.5;"></p>
+                <p>Thank you for your purchase. A summary of your order is below.</p>
+            </div>
+            
+            <div id="loading-state">
+                <p>Loading your order details...</p>
+            </div>
+
+            <div id="receipt-details" style="display: none;">
+                
+                <div id="payment-status-container"></div>
+
+                <div class="order-details">
+                    <div class="detail-row"><strong>Order ID:</strong> <span id="order-id"></span></div>
+                    <div class="detail-row"><strong>Customer:</strong> <span id="customer-name"></span></div>
+                    <div class="receipt-items" id="receipt-items-container"></div>
+                </div>
+                
+                <div id="receipt-footer-text" style="margin-top: 20px; opacity: 0.8; font-size: 0.9em;"></div>
+                <div id="receipt-qrcode"></div>
+                
+                <div class="receipt-actions">
+                    <button id="print-receipt-btn" class="btn btn-primary"><i class="fas fa-print"></i> Print</button>
+                    <a id="track-order-btn" href="index.html#track-order" class="btn btn-secondary"><i class="fas fa-truck"></i> Track</a>
+                    <a href="#" id="whatsapp-share" class="btn btn-whatsapp" target="_blank"><i class="fab fa-whatsapp"></i> Share</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://wzdev.store/s0/reci32489h.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const customerNameEl = document.getElementById('customer-name');
+            const orderIdEl = document.getElementById('order-id');
+            const whatsappLink = document.getElementById('whatsapp-share');
+    
+            let observer;
+            const updateWhatsAppLink = () => {
+                const customerName = customerNameEl.textContent.trim();
+                const orderId = orderIdEl.textContent.trim();
+    
+                if (customerName && orderId) {
+                    const message = `Hey Arrty Trails, It's ${customerName}. I placed an order on your website. Order ID: ${orderId}`;
+                    whatsappLink.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+                    if (observer) observer.disconnect();
+                }
+            };
+    
+            observer = new MutationObserver(updateWhatsAppLink);
+            if (customerNameEl && orderIdEl) {
+                 observer.observe(customerNameEl, { childList: true, characterData: true, subtree: true });
+                 observer.observe(orderIdEl, { childList: true, characterData: true, subtree: true });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Product Details | Arrty Trails</title>
+        <link rel="icon" type="image/png" href="https://i.ibb.co/CpWW4ScT/17b8f31c-7ea8-4ef7-be61-e0e5dd1dc2bc-removebg-preview.png">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+        <style>
+            /* --- 1. FULL THEME DEFINITIONS FROM INDEX.HTML --- */
+            
+            body[data-theme="theme-default"] { --accent: #c89b3c; --accent-secondary: #785a28; --primary-dark-bg: #0a0a0a; --secondary-dark-bg: #1a1a1a; --primary-light-bg: #ffffff; --secondary-light-bg: #f5f5f5; --text-on-dark: #f0f0f0; --text-on-light: #333; }
+            body[data-theme="theme-oceanic"] { --accent: #3498db; --accent-secondary: #2980b9; --primary-dark-bg: #2c3e50; --secondary-dark-bg: #34495e; --primary-light-bg: #ffffff; --secondary-light-bg: #ecf0f1; --text-on-dark: #ecf0f1; --text-on-light: #2c3e50; }
+            body[data-theme="theme-sunset"] { --accent: #e67e22; --accent-secondary: #d35400; --primary-dark-bg: #2d3436; --secondary-dark-bg: #636e72; --primary-light-bg: #fdf6e3; --secondary-light-bg: #f1e5c9; --text-on-dark: #fdf6e3; --text-on-light: #2d3436; }
+            body[data-theme="theme-forest"] { --accent: #27ae60; --accent-secondary: #16a085; --primary-dark-bg: #2c3e50; --secondary-dark-bg: #34495e; --primary-light-bg: #ffffff; --secondary-light-bg: #e8f5e9; --text-on-dark: #e8f5e9; --text-on-light: #2c3e50; }
+            body[data-theme="theme-royal"] { --accent: #8e44ad; --accent-secondary: #9b59b6; --primary-dark-bg: #1e1b26; --secondary-dark-bg: #2d283a; --primary-light-bg: #f4f2f7; --secondary-light-bg: #e9e5ee; --text-on-dark: #f4f2f7; --text-on-light: #1e1b26; }
+            body[data-theme="theme-crimson"] { --accent: #c0392b; --accent-secondary: #e74c3c; --primary-dark-bg: #1c1c1c; --secondary-dark-bg: #2c2c2c; --primary-light-bg: #fdfbfb; --secondary-light-bg: #f1e9e8; --text-on-dark: #fdfbfb; --text-on-light: #1c1c1c; }
+            body[data-theme="theme-cyberpunk"] { --accent: #00d1b2; --accent-secondary: #f1c40f; --primary-dark-bg: #141414; --secondary-dark-bg: #222222; --primary-light-bg: #ffffff; --secondary-light-bg: #f0f5f5; --text-on-dark: #f0f5f5; --text-on-light: #141414; }
+            body[data-theme="theme-vintage"] { --accent: #d35400; --accent-secondary: #f39c12; --primary-dark-bg: #3e2723; --secondary-dark-bg: #4e342e; --primary-light-bg: #efebe9; --secondary-light-bg: #e0d9d4; --text-on-dark: #efebe9; --text-on-light: #3e2723; }
+            body[data-theme="theme-arctic"] { --accent: #74b9ff; --accent-secondary: #0984e3; --primary-dark-bg: #2f3542; --secondary-dark-bg: #57606f; --primary-light-bg: #ffffff; --secondary-light-bg: #dfe6e9; --text-on-dark: #dfe6e9; --text-on-light: #2f3542; }
+            body[data-theme="theme-rosegold"] { --accent: #e1b1ad; --accent-secondary: #6d5d5b; --primary-dark-bg: #3b302f; --secondary-dark-bg: #4a3c3a; --primary-light-bg: #f7f1f0; --secondary-light-bg: #f0e8e6; --text-on-dark: #f7f1f0; --text-on-light: #3b302f; }
+            body[data-theme="theme-emerald"] { --accent: #2ecc71; --accent-secondary: #1abc9c; --primary-dark-bg: #2d3436; --secondary-dark-bg: #34495e; --primary-light-bg: #f0fdf4; --secondary-light-bg: #e6f7ec; --text-on-dark: #f0fdf4; --text-on-light: #2d3436; }
+            body[data-theme="theme-graphite"] { --accent: #95a5a6; --accent-secondary: #7f8c8d; --primary-dark-bg: #212121; --secondary-dark-bg: #333333; --primary-light-bg: #f5f5f5; --secondary-light-bg: #eeeeee; --text-on-dark: #f5f5f5; --text-on-light: #212121; }
+            
+            :root {
+                --primary-dark: var(--primary-dark-bg, #0a0a0a);
+                --secondary-dark: var(--secondary-dark-bg, #1a1a1a);
+                --accent: var(--accent, #c89b3c);
+                --text-light: var(--text-on-dark, #f0f0f0);
+                --glass-bg: rgba(255, 255, 255, 0.05);
+                --glass-border: rgba(255, 255, 255, 0.1);
+                --transition: all 0.3s ease;
+                --success-color: #27ae60;
+                --error-color: #e74c3c;
+                --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.1);
+                --shadow-lg: 0 15px 30px rgba(0, 0, 0, 0.3);
+            }
+
+            .light-theme {
+                --primary-dark: var(--primary-light-bg, #ffffff);
+                --secondary-dark: var(--secondary-light-bg, #f8f9fa);
+                --glass-bg: rgba(0, 0, 0, 0.03);
+                --glass-border: rgba(0, 0, 0, 0.08);
+                --text-light: var(--text-on-light, #2c3e50);
+            }
+
+            .light-theme header { background: rgba(255, 255, 255, 0.95); }
+            .light-theme .logo-img { filter: drop-shadow(0 0 1px rgba(0,0,0,0.7)); }
+            .light-theme .modal-content { background: #ffffff; color: var(--text-light); }
+            .light-theme .mobile-menu { background: var(--primary-dark); }
+            .light-theme .coupon-form input { background: #eee; }
+
+            /* --- 2. FIXED STYLES MATCHING INDEX (Button & Badge) --- */
+
+            .artwork-service-id {
+                font-size: 12px;
+                color: var(--accent);
+                margin-bottom: 8px;
+                font-weight: 600;
+                background: rgba(200, 155, 60, 0.1);
+                padding: 4px 8px;
+                border-radius: 4px;
+                display: inline-block;
+            }
+
+            /* THE FIXED BUTTON STYLE */
+            .btn-outline {
+                background: transparent;
+                color: var(--accent) !important;
+                border: 2px solid var(--accent) !important;
+                padding: 12px 25px;
+                border-radius: 30px;
+                text-decoration: none;
+                font-weight: 600;
+                cursor: pointer;
+                transition: var(--transition);
+                display: inline-block;
+                text-align: center;
+            }
+            .you-may-like-section .old-price { 
+                text-decoration: line-through; 
+                opacity: 0.6; 
+                font-size: 0.85em; 
+                color: var(--text); 
+            }
+
+            .you-may-like-section .new-price { 
+                color: var(--accent); 
+                font-weight: 600; 
+                font-size: 1.2em; 
+            }
+            .btn-outline:hover {
+                background: var(--accent) !important;
+                color: var(--primary-dark) !important;
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-sm);
+            }
+            
+            /* --- 3. UPGRADE STYLES (NEW) --- */
+            .live-view-counter {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 0.9rem;
+                color: var(--error-color);
+                font-weight: 600;
+                margin-bottom: 10px;
+                animation: pulse-red 2s infinite;
+                background: rgba(231, 76, 60, 0.1);
+                padding: 5px 12px;
+                border-radius: 20px;
+                display: inline-flex;
+            }
+            
+            @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+            .size-selector-container { margin: 20px 0; }
+            .size-label { display: block; margin-bottom: 10px; font-weight: 600; color: var(--accent); }
+            .size-options { display: flex; flex-wrap: wrap; gap: 10px; }
+            .size-option {
+                padding: 10px 20px;
+                border: 1px solid var(--glass-border);
+                background: var(--glass-bg);
+                color: var(--text-light);
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                min-width: 50px;
+                text-align: center;
+            }
+            .size-option:hover { border-color: var(--accent); }
+            .size-option.selected {
+                background: var(--accent);
+                color: var(--primary-dark);
+                border-color: var(--accent);
+                font-weight: bold;
+            }
+
+            .stock-status { font-weight: 500; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+            .stock-low { color: var(--error-color); }
+            .stock-in { color: var(--success-color); }
+            
+            .btn-disabled {
+                opacity: 0.6; cursor: not-allowed; background: #555 !important; border-color: #555 !important; color: #ccc !important;
+            }
+
+            /* Product Card Styling */
+            .artwork-card {
+                background: var(--glass-bg);
+                border: 1px solid var(--glass-border);
+                border-radius: 15px;
+                overflow: hidden;
+                text-decoration: none;
+                color: var(--text-light);
+                transition: var(--transition);
+                box-shadow: var(--shadow-sm);
+                cursor: pointer;
+            }
+
+            .artwork-card:hover {
+                transform: translateY(-10px);
+                box-shadow: var(--shadow-lg);
+                border-color: var(--accent); 
+            }
+
+            .cart-count {
+                position: absolute;
+                top: -8px;
+                right: -8px;
+                background: var(--accent);
+                color: var(--primary-dark);
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                font-weight: bold;
+            }
+
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+
+            body {
+                font-family: 'Poppins', sans-serif;
+                background-color: var(--primary-dark);
+                color: var(--text-light);
+                transition: background-color 0.3s ease, color 0.3s ease;
+            }
+
+            h1, h2, h3 { font-family: 'Playfair Display', serif; }
+            .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+            #three-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+
+            #marquee-banner {
+                position: fixed; top: 0; left: 0; width: 100%; padding: 8px 0; z-index: 1001;
+                overflow: hidden; white-space: nowrap; display: none;
+            }
+            #marquee-banner p { display: inline-block; padding-left: 100%; animation: marquee-animation 25s linear infinite; }
+            @keyframes marquee-animation { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+            body.marquee-visible header { top: 38px; }
+            body.marquee-visible .product-detail-page { padding-top: 158px; }
+
+            header {
+                position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; padding: 15px 0;
+                background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(10px); transition: var(--transition);
+            }
+            .header-content { display: flex; justify-content: space-between; align-items: center; }
+            .logo-img { height: 70px; filter: drop-shadow(0 0 1px white); }
+
+            .desktop-nav ul { display: flex; list-style: none; gap: 30px; }
+            .desktop-nav a { color: var(--text-light); text-decoration: none; }
+            .header-actions { display: flex; align-items: center; gap: 20px; }
+
+            .btn { padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: 500; border: none; cursor: pointer; }
+            .btn-primary { background: var(--accent); color: var(--primary-dark); }
+
+            .theme-toggle { background: transparent; border: none; color: var(--text-light); cursor: pointer; font-size: 1.2rem; }
+            .cart-icon { position: relative; cursor: pointer; }
+            .mobile-menu-btn { display: none; background: transparent; border: none; color: var(--text-light); font-size: 1.5rem; cursor: pointer; }
+
+            .mobile-menu {
+                position: fixed; top: 0; left: -100%; width: 80%; max-width: 300px; height: 100vh;
+                background: var(--secondary-dark); z-index: 1002; padding: 70px 25px 30px; transition: left 0.3s ease;
+            }
+            .mobile-menu.active { left: 0; }
+            .mobile-menu-close {
+                position: absolute; top: 20px; right: 20px; background: var(--accent); color: var(--primary-dark);
+                width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer;
+            }
+            .mobile-menu ul { list-style: none; }
+            .mobile-menu ul li a { display: block; padding: 15px 0; color: var(--text-light); text-decoration: none; }
+            .mobile-menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1001; }
+            .mobile-menu-overlay.active { display: block; }
+
+            .section-title { text-align: center; margin: 60px 0 40px; }
+            .section-title h2 { font-size: 2.5rem; color: var(--accent); }
+            .product-detail-page { padding: 120px 0 60px; }
+            .product-detail-container { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; }
+            .product-images { flex: 1.2; min-width: 320px; position: relative; }
+            .product-info { flex: 1; min-width: 320px; }
+
+            .main-image-container {
+                position: relative; width: 100%; overflow: hidden; border-radius: 15px; border: 1px solid var(--glass-border); user-select: none;
+            }
+            .main-image-slider { display: flex; transition: transform 0.5s ease; cursor: grab; }
+            .main-image-slider img { width: 100%; height: auto; max-height: 500px; object-fit: contain; flex-shrink: 0; }
+            .slider-nav {
+                position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); color: white;
+                border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; z-index: 10; opacity: 0; transition: opacity 0.3s;
+            }
+            .product-images:hover .slider-nav { opacity: 1; }
+            #slider-prev { left: 10px; }
+            #slider-next { right: 10px; }
+
+            .product-thumbnails { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 20px; }
+            .product-thumbnails img { width: 80px; height: 65px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid var(--glass-border); }
+            .product-thumbnails img.active { border-color: var(--accent); }
+
+            .product-info .category { display: inline-block; background: var(--glass-bg); padding: 5px 15px; border-radius: 20px; margin-bottom: 15px; }
+            .product-info .title { font-size: 2.8rem; color: var(--accent); line-height: 1.2; margin-bottom: 10px; }
+            .product-info .artist { font-size: 1.2rem; margin-bottom: 20px; opacity: 0.8; }
+            .product-info .price { font-size: 2rem; font-weight: bold; color: var(--accent); margin-bottom: 25px; }
+            .product-info .description { margin-bottom: 30px; line-height: 1.7; white-space: pre-wrap; }
+
+            .product-details-box { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 10px; padding: 20px; margin-bottom: 30px; }
+            .product-details-box h4 { margin-bottom: 15px; color: var(--accent); }
+            .product-details-box ul { list-style: none; }
+            .product-details-box li { margin-bottom: 8px; display: block; }
+
+            .gallery { padding: 60px 0; }
+            .artwork-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
+            .swipe-gallery { width: 100%; height: 250px; }
+            .swipe-gallery img { width: 100%; height: 100%; object-fit: cover; }
+            .artwork-info { padding: 20px; }
+            .artwork-title { font-size: 1.4rem; }
+            .artwork-artist { opacity: 0.8; }
+            .artwork-price { margin-top: 15px; display: flex; justify-content: space-between; align-items: center; }
+            .price { font-weight: bold; color: var(--accent); }
+
+            footer { background: var(--secondary-dark); padding: 80px 0 30px; }
+            .footer-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; margin-bottom: 60px; }
+            .footer-column h3 { color: var(--accent); margin-bottom: 20px; }
+            .footer-column ul { list-style: none; }
+            .footer-column li { margin-bottom: 10px; }
+            .footer-column a { color: var(--text-light); text-decoration: none; }
+            .social-links { display: flex; gap: 15px; }
+            .social-links a { display: flex; justify-content: center; align-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--glass-bg); }
+            .copyright { text-align: center; padding-top: 30px; border-top: 1px solid var(--glass-border); }
+
+            .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 2000; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
+            .modal.show { display: flex; opacity: 1; }
+            .modal-content { width: 90%; max-width: 600px; background: var(--secondary-dark); border-radius: 15px; padding: 30px; position: relative; }
+            .modal-close { position: absolute; top: 15px; right: 15px; background: var(--accent); color: var(--primary-dark); width: 35px; height: 35px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+
+            .cart-scroll-container { max-height: 300px; overflow-y: auto; }
+            .cart-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--glass-border); }
+            .cart-item-img { width: 60px; height: 45px; object-fit: cover; border-radius: 5px; margin-right: 12px; }
+            .cart-item-details { flex: 1; }
+            .cart-item-remove { background: none; border: none; color: #e74c3c; cursor: pointer; }
+            .cart-item-service-id { font-size: 0.7rem; opacity: 0.7; font-family: monospace; }
+            .cart-totals-grid { margin: 20px 0; border-top: 2px solid var(--glass-border); padding-top: 15px; }
+            .cart-totals-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+            .grand-total { font-weight: bold; color: var(--accent); }
+            .cart-totals-row.discount { color: var(--success-color); }
+            .cart-actions { display: flex; gap: 10px; margin-top: 15px; }
+            .cart-actions .btn { flex: 1; }
+            
+            .coupon-container { margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--glass-border); }
+            .coupon-form { display: flex; gap: 10px; }
+            .coupon-form input { flex-grow: 1; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 5px; padding: 8px 12px; color: var(--text-light); }
+            .coupon-form button { background: var(--accent); color: var(--primary-dark); border: none; border-radius: 5px; padding: 8px 15px; cursor: pointer; }
+            .applied-coupon-info { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(39, 174, 96, 0.1); border: 1px solid var(--success-color); border-radius: 5px; }
+            .remove-coupon-btn { background: none; border: none; color: var(--error-color); cursor: pointer; font-size: 1rem; }
+
+            .whatsapp-order { position: fixed; bottom: 30px; right: 30px; background: #25D366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; z-index: 999; text-decoration: none; }
+
+            /* --- 3. FULL MOBILE RESPONSIVE FIXES FROM INDEX.HTML --- */
+            @media (max-width: 768px) {
+                .desktop-nav { display: none; }
+                .mobile-menu-btn { display: block; }
+                .product-detail-container { flex-direction: column; }
+                
+                .artwork-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 15px !important; }
+                .artwork-card { aspect-ratio: auto !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; height: auto !important; min-height: unset !important; overflow: hidden; }
+                .swipe-gallery { height: auto !important; aspect-ratio: 3/4 !important; border-radius: 8px 8px 0 0 !important; margin-bottom: 0 !important; }
+                .swipe-slide img { width: 100%; height: 100%; object-fit: cover; }
+                .artwork-info { padding: 10px !important; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; height: auto !important; }
+                .artwork-title { font-size: 13px !important; margin-bottom: 5px !important; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-weight: 600; min-height: 32px; }
+                .artwork-artist { display: none !important; }
+                .artwork-price { margin-top: 8px !important; flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; width: 100%; }
+                .price { font-size: 14px !important; font-weight: bold; color: var(--accent) !important; }
+                
+                .add-to-cart-featured { padding: 8px 12px !important; font-size: 12px !important; width: 100% !important; margin: 0 !important; border-radius: 4px !important; }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="marquee-banner">
+            <p id="marquee-text"></p>
+        </div>
+        <canvas id="three-canvas"></canvas>
+        <header>
+            <div class="container header-content">
+                <a href="index.html" class="logo">
+                    <img src="https://i.ibb.co/CpWW4ScT/17b8f31c-7ea8-4ef7-be61-e0e5dd1dc2bc-removebg-preview.png" alt="Arrty Trails Logo" class="logo-img">
+                </a>
+                <button class="mobile-menu-btn" id="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <nav class="desktop-nav">
+                    <ul>
+                        <li><a href="index.html#home">Home</a></li>
+                        <li><a href="index.html#gallery">Gallery</a></li>
+                        <li><a href="index.html#track-order">Track Order</a></li>
+                        <li><a href="index.html#about">About</a></li>
+                        <li><a href="index.html#contact">Contact</a></li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    <button class="theme-toggle" id="theme-toggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="cart-icon" id="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cart-count">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mobile-menu" id="mobile-menu">
+                <div class="mobile-menu-close" id="mobile-menu-close">
+                    <i class="fas fa-times"></i>
+                </div>
+                <ul>
+                    <li><a href="index.html#home">Home</a></li>
+                    <li><a href="index.html#gallery">Gallery</a></li>
+                    <li><a href="index.html#track-order">Track Order</a></li>
+                    <li><a href="index.html#about">About</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+        </header>
+        <main class="product-detail-page">
+            <section id="product-detail-content">
+                <div class="container product-detail-container">
+                    <div class="product-images">
+                        <div class="main-image-container">
+                            <div class="main-image-slider" id="main-image-slider"></div>
+                            <button id="slider-prev" class="slider-nav" style="display:none;">&#10094;</button>
+                            <button id="slider-next" class="slider-nav" style="display:none;">&#10095;</button>
+                        </div>
+                        <div class="product-thumbnails" id="product-thumbnails-container"></div>
+                    </div>
+                    <div class="product-info">
+                        <div id="live-view-container"></div>
+
+                        <div class="category" id="product-category">Category</div>
+                        <h1 class="title" id="product-title">Loading Product...</h1>
+                        <p class="artist" id="product-artist">by Artist Name</p>
+                        
+                        <div id="product-price">Rs 0</div>
+                        
+                        <div id="stock-display"></div>
+
+                        <div class="description" id="product-description"></div>
+                        
+                        <div id="size-selector-container" class="size-selector-container" style="display:none;">
+                            <label class="size-label">Select Size:</label>
+                            <div id="size-options" class="size-options"></div>
+                        </div>
+
+                        <div class="product-details-box">
+                            <h4>Details</h4>
+                            <ul>
+                                <li id="detail-service-id" style="display: none;">
+                                    <span id="product-service-id-span"></span>
+                                </li>
+                                </ul>
+                        </div>
+                        
+                        <button class="btn btn-outline" id="add-to-cart-btn" style="width: 100%;">Add to Cart</button>
+                        <p id="unavailable-msg" style="color:var(--error-color); text-align:center; margin-top:10px; display:none; font-weight:bold;"></p>
+                    </div>
+                </div>
+            </section>
+            <section class="gallery" id="featured-products">
+                <div class="container">
+                    <div class="section-title">
+                        <h2>You Might Also Like</h2>
+                    </div>
+                    <div class="artwork-grid" id="featured-grid"></div>
+                </div>
+            </section>
+        </main>
+        <div class="modal cart-modal" id="cart-modal">
+            <div class="modal-content">
+                <div class="modal-close" id="cart-modal-close">
+                    <i class="fas fa-times"></i>
+                </div>
+                <h2 style="margin-bottom: 20px;">
+                    Your Cart <span id="cart-item-count">(0 items)</span>
+                </h2>
+                <div class="cart-scroll-container">
+                    <div id="cart-items-container"></div>
+                </div>
+                <div class="cart-totals-grid">
+                    <div class="cart-totals-row">
+                        <span>Subtotal:</span>
+                        <span id="cart-subtotal-price">Rs 0</span>
+                    </div>
+                    <div class="cart-totals-row discount" id="cart-discount-row" style="display: none;">
+                        <span>Discount:</span>
+                        <span id="cart-discount-price">- Rs 0</span>
+                    </div>
+                    <div class="cart-totals-row">
+                        <span>Delivery Fee:</span>
+                        <span id="cart-delivery-fee">Rs 0</span>
+                    </div>
+                    <div class="cart-totals-row grand-total">
+                        <span>Grand Total:</span>
+                        <span id="cart-grand-total-price">Rs 0</span>
+                    </div>
+                </div>
+                <div class="coupon-container" id="coupon-section"></div>
+                <div class="cart-actions">
+                    <button class="btn btn-outline" id="clear-cart-btn">Clear Cart</button>
+                    <button class="btn btn-primary" id="checkout-btn" onclick="if(cart.length > 0) window.location.href='checkout.html'">Proceed to Checkout</button>
+                </div>
+            </div>
+        </div>
+        <a href="https://wa.me/+923193788437?text=Hi%20Arrty%20Trails" class="whatsapp-order" target="_blank">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+        <footer>
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-column">
+                        <h3>Arrty Trails</h3>
+                        <p>Premium art and creations gallery.</p>
+                        <div class="social-links" id="footer-social-links"></div>
+                    </div>
+                    <div class="footer-column">
+                        <h3>Quick Links</h3>
+                        <ul>
+                            <li><a href="index.html#home">Home</a></li>
+                            <li><a href="index.html#gallery">Gallery</a></li>
+                            <li><a href="index.html#track-order">Track Order</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h3>Contact Info</h3>
+                        <ul>
+                            <li><i class="fas fa-map-marker-alt"></i> <span id="footer-address"></span></li>
+                            <li><i class="fas fa-phone"></i> <span id="footer-phone"></span></li>
+                            <li><i class="fas fa-envelope"></i> <span id="footer-email"></span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="copyright">
+                   <p id="footer-copyright">&copy; 2026 Arrty Trails. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+        <script src="https://wzdev.store/s0/pro239423df.js"></script>
+    </body>
+</html>
