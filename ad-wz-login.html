@@ -1575,8 +1575,7 @@
                     const row = table.insertRow();
                     let priceDisplay = `PKR ${d.price.toLocaleString()}`;
                     if(d.discountPrice) priceDisplay = `<span style="text-decoration:line-through; color:var(--secondary); font-size:0.85em;">PKR ${d.price}</span><br><strong>PKR ${d.discountPrice}</strong>`;
-                    row.innerHTML = `<td><input type="checkbox" class="table-checkbox" data-id="${doc.id}"></td><td><img src="${(d.imageUrls && d.imageUrls.length) ? d.imageUrls[0] : ''}" class="artwork-image"></td><td>${d.serviceId||'N/A'}</td><td>${d.title}</td><td>${priceDisplay}</td><td>${d.category}</td><td><button class="action-btn edit-btn" onclick="editArtwork('${doc.id}')"><i class="fas fa-edit"></i></button><button class="action-btn delete-btn" onclick="deleteArtwork('${doc.id}')"><i class="fas fa-trash"></i></button></td>`;
-                    row.querySelector('.table-checkbox').addEventListener('change', e => handleSelectSingle('artworks', e.target.dataset.id, e.target.checked));
+row.innerHTML = `<td><input type="checkbox" class="table-checkbox" data-id="${doc.id}"></td><td><img src="${(d.imageUrls && d.imageUrls.length) ? d.imageUrls[0] : ''}" class="artwork-image"></td><td>${d.serviceId||'N/A'}</td><td>${d.title}</td><td>${priceDisplay}</td><td>${d.category}</td><td><button class="action-btn edit-btn" onclick="editArtwork('${doc.id}')"><i class="fas fa-edit"></i></button><button class="action-btn delete-btn" onclick="deleteArtwork('${doc.id}')"><i class="fas fa-trash"></i></button><button class="action-btn" style="background: #27ae60; color: white; margin-left: 5px;" onclick="migrateImageToGitHub(this, '${doc.id}', '${d.serviceId || 'N/A'}', '${d.imageUrls && d.imageUrls.length ? d.imageUrls[0] : ''}')" title="Migrate to GitHub"><i class="fas fa-cloud-upload-alt"></i></button></td>`;                    row.querySelector('.table-checkbox').addEventListener('change', e => handleSelectSingle('artworks', e.target.dataset.id, e.target.checked));
                 });
                 updateSelectionCount('artworks');
             });
@@ -2228,7 +2227,75 @@ function loadLoginHistory() {
         });
     });
 }
+
+        async function migrateImageToGitHub(buttonElement, docId, serviceId, imageUrl) {
+    // 1. Instantly disable the button so you can't click it twice
+    buttonElement.disabled = true;
+    buttonElement.innerText = "Transferring...";
+    buttonElement.style.opacity = "0.7";
+
+    // --- YOUR GITHUB DETAILS ---
+    const GITHUB_TOKEN = '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'; 
+    const OWNER = 'jutt404'; 
+    const REPO = 'my-web-project'; 
+    // ---------------------------
+    
+    // Create the new file name (e.g., AT1093.jpg). If no Service ID, it uses the Firebase ID.
+    const fileName = `${serviceId && serviceId !== 'N/A' ? serviceId : docId}.jpg`;
+    const newLocalPath = `img/${fileName}`;
+    const githubApiUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${newLocalPath}`;
+
+    try {
+        // 2. Fetch the image using a proxy (bypasses ImgBB's security block)
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(imageUrl)}`;
+        const imageResponse = await fetch(proxyUrl);
+        if (!imageResponse.ok) throw new Error("Could not fetch image from ImgBB");
+        const blob = await imageResponse.blob();
+
+        // 3. Convert image to Base64 for GitHub
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = async function() {
+            try {
+                const base64data = reader.result.split(',')[1];
+
+                // 4. Upload directly to your GitHub repo
+                const uploadResponse = await fetch(githubApiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Auto-migrated image ${fileName}`,
+                        content: base64data
+                    })
+                });
+
+                // 5. If successful (201) OR file already exists (422)
+                if (uploadResponse.ok || uploadResponse.status === 201 || uploadResponse.status === 422) {
+                    
+                    // 6. Update Firebase Database to use the new local link
+                    await db.collection('artworks').doc(docId).update({
+                        imageUrls: [newLocalPath] // Changes it to "img/AT1093.jpg"
+                    });
+
+                    // 7. Update button to show success
+                    buttonElement.innerText = "Done!";
+                    buttonElement.style.background = "#27ae60"; // Green success color
+                    buttonElement.style.opacity = "1";
+                } else {
+                    const err = await uploadResponse.json();
+                    throw new Error(err.message);
+                }
+            } catch (err) {
+                console.error(err);
+                buttonElement.innerText = "Failed";
+                buttonElement.style.background = "#e74c3c";
+                alert("Upload Error: " + err.message);
+            }
     </script>
     
 </body>
 </html>
+
