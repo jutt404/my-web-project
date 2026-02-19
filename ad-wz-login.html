@@ -1363,185 +1363,78 @@
             } catch (e) { showStatus("Revert failed: " + e.message, "error"); }
         }
 
-        // --- UPGRADED SPY AGENT WITH 20+ FALLBACKS ---
-        async function logSpyAgentActivity(actionType, emailAttempt = "N/A", extraInfo = "") {
-            try {
-                // Bot Detection Logic
-                const isBot = /bot|googlebot|crawler|spider|robot|crawling|webdriver/i.test(navigator.userAgent) || navigator.webdriver;
-                const visitorType = isBot ? "Bot / Crawler" : "Human User";
-                const browserInfo = navigator.userAgent || "Unknown Browser";
+       // --- NEW BULLETPROOF IP & LOCATION GRABBER ---
+async function getVisitorInfo() {
+    let ip = "Unknown IP";
+    let loc = "Unknown Location";
+    
+    // Step 1: Grab IP using Cloudflare (100% reliable, no CORS issues, no rate limits)
+    try {
+        const cfResponse = await fetch('https://1.1.1.1/cdn-cgi/trace');
+        const cfText = await cfResponse.text();
+        const ipMatch = cfText.match(/ip=([\w\.:]+)/);
+        if (ipMatch) ip = ipMatch[1];
+    } catch(e) { console.warn("CF failed", e); }
 
-                let locationString = "Unknown Location";
-                let ipAddress = "Unknown IP";
+    // Step 2: Grab Location using GeoJS
+    try {
+        let geoUrl = ip !== "Unknown IP" ? `https://get.geojs.io/v1/ip/geo/${ip}.json` : 'https://get.geojs.io/v1/ip/geo.json';
+        const geoRes = await fetch(geoUrl);
+        const geoData = await geoRes.json();
+        if (geoData.ip && ip === "Unknown IP") ip = geoData.ip;
+        if (geoData.city && geoData.country) loc = `${geoData.city}, ${geoData.country}`;
+    } catch(e) {
+        // Fallback to IPAPI if GeoJS fails
+        try {
+            const ipapiRes = await fetch('https://ipapi.co/json/');
+            const ipapiData = await ipapiRes.json();
+            if (ipapiData.ip && ip === "Unknown IP") ip = ipapiData.ip;
+            if (ipapiData.city && ipapiData.country_name) loc = `${ipapiData.city}, ${ipapiData.country_name}`;
+        } catch(err) {}
+    }
+    
+    return { ip, loc };
+}
 
-                // Fast timeout to ensure smooth running even with strict blocklists
-                const fetchWithTimeout = async (url, timeout = 1500) => {
-                    const controller = new AbortController();
-                    const id = setTimeout(() => controller.abort(), timeout);
-                    try {
-                        const response = await fetch(url, { signal: controller.signal });
-                        clearTimeout(id); 
-                        if (!response.ok) throw new Error("HTTP error");
-                        return await response.json();
-                    } catch (error) { clearTimeout(id); throw error; }
-                };
+// --- UPGRADED SPY AGENT (CLEAN VERSION) ---
+async function logSpyAgentActivity(actionType, emailAttempt = "N/A", extraInfo = "") {
+    try {
+        const isBot = /bot|googlebot|crawler|spider|robot|crawling|webdriver/i.test(navigator.userAgent) || navigator.webdriver;
+        const visitorType = isBot ? "Bot / Crawler" : "Human User";
+        const browserInfo = navigator.userAgent || "Unknown Browser";
 
-                // 20+ Public API Methods for Bulletproof Geolocation Fallback
-                const locationAPIs = [
-                    { url: 'https://ipwho.is/', parse: d => ({ loc: (d.success && d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.ip || null }) },
-                    { url: 'https://get.geojs.io/v1/ip/geo.json', parse: d => ({ loc: (d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.ip || null }) },
-                    { url: 'https://ipapi.co/json/', parse: d => ({ loc: (d.city && d.country_name) ? `${d.city}, ${d.country_name}` : null, ip: d.ip || null }) },
-                    { url: 'https://freeipapi.com/api/json', parse: d => ({ loc: (d.cityName && d.countryName) ? `${d.cityName}, ${d.countryName}` : null, ip: d.ipAddress || null }) },
-                    { url: 'https://ipinfo.io/json', parse: d => ({ loc: (d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.ip || null }) },
-                    { url: 'https://api.db-ip.com/v2/free/self', parse: d => ({ loc: (d.city && d.countryName) ? `${d.city}, ${d.countryName}` : null, ip: d.ipAddress || null }) },
-                    { url: 'https://api.ip.sb/geoip', parse: d => ({ loc: (d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.ip || null }) },
-                    { url: 'https://ip.seeip.org/geoip', parse: d => ({ loc: (d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.ip || null }) },
-                    { url: 'https://api.techniknews.net/ipgeo/', parse: d => ({ loc: (d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.ip || null }) },
-                    { url: 'https://api.myip.com', parse: d => ({ loc: d.country ? d.country : null, ip: d.ip || null }) },
-                    { url: 'https://ifconfig.co/json', parse: d => ({ loc: (d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.ip || null }) },
-                    { url: 'https://ip-api.io/json', parse: d => ({ loc: (d.city && d.country_name) ? `${d.city}, ${d.country_name}` : null, ip: d.ip || null }) },
-                    { url: 'https://api.ipbase.com/v1/json/', parse: d => ({ loc: (d.city && d.country_name) ? `${d.city}, ${d.country_name}` : null, ip: d.ip || null }) },
-                    { url: 'https://extreme-ip-lookup.com/json/', parse: d => ({ loc: (d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.query || null }) },
-                    { url: 'https://api.iplocation.net/?ip=', parse: d => ({ loc: d.country_name ? d.country_name : null, ip: d.ip || null }) },
-                    { url: 'https://api.infoip.io/', parse: d => ({ loc: (d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.ip || null }) },
-                    { url: 'https://ipapi.com/ip_api.php?ip=', parse: d => ({ loc: (d.city && d.country_name) ? `${d.city}, ${d.country_name}` : null, ip: d.ip || null }) },
-                    { url: 'https://api.hostip.info/get_json.php', parse: d => ({ loc: (d.city && d.country_name) ? `${d.city}, ${d.country_name}` : null, ip: d.ip || null }) },
-                    { url: 'https://jsonip.com', parse: d => ({ loc: null, ip: d.ip || null }) }, // fallback IP only
-                    { url: 'https://ifconfig.me/all.json', parse: d => ({ loc: null, ip: d.ip_addr || null }) } // fallback IP only
-                ];
+        const { ip, loc } = await getVisitorInfo();
 
-                // Fire requests sequentially but with a very tight timeout to not stall the app
-                for (const api of locationAPIs) {
-                    try {
-                        const data = await fetchWithTimeout(api.url);
-                        const parsed = api.parse(data);
-                        if (parsed && (parsed.loc || parsed.ip)) {
-                            if (parsed.loc) locationString = parsed.loc;
-                            if (parsed.ip) ipAddress = parsed.ip;
-                            if (locationString !== "Unknown Location") break; // Stop loop once we get a real location hit!
-                        }
-                    } catch (err) {} // Fail silently, instantly move to the next of the 20 APIs
-                }
+        await db.collection('visitorLogs').add({
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            action: actionType, 
+            emailAttempt: emailAttempt,
+            ip: ip,
+            location: loc,
+            device: browserInfo,
+            visitorType: visitorType,
+            extraInfo: extraInfo
+        });
+    } catch(e) { console.error("Spy Agent tracking failed:", e); }
+}
 
-                // Save to Firebase
-                await db.collection('visitorLogs').add({
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    action: actionType, 
-                    emailAttempt: emailAttempt,
-                    ip: ipAddress,
-                    location: locationString,
-                    device: browserInfo,
-                    visitorType: visitorType,
-                    extraInfo: extraInfo
-                });
+// --- UPGRADED LOGIN TRACKER ---
+async function trackAdminLogin(user) {
+    try {
+        const browserInfo = navigator.userAgent || "Unknown Browser";
+        const { ip, loc } = await getVisitorInfo();
 
-            } catch(e) { console.error("Spy Agent tracking failed:", e); }
-        }
-
-        function loadSpyAgent() {
-            const table = document.getElementById('spy-agent-table');
-            db.collection('visitorLogs').orderBy('timestamp', 'desc').limit(50).onSnapshot(snap => {
-                table.innerHTML = '';
-                if (snap.empty) { table.innerHTML = '<tr><td colspan="4">No visitor logs found.</td></tr>'; return; }
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    const time = d.timestamp ? d.timestamp.toDate().toLocaleString() : 'Just now';
-                    
-                    let deviceClass = "Unknown";
-                    if (d.device.includes("Win")) deviceClass = "Windows PC";
-                    else if (d.device.includes("Mac")) deviceClass = "Mac";
-                    else if (d.device.includes("iPhone") || d.device.includes("iPad")) deviceClass = "iOS Device";
-                    else if (d.device.includes("Android")) deviceClass = "Android Device";
-
-                    let actionColor = "var(--info)";
-                    let actionIcon = "fa-eye";
-                    if (d.action.includes("Failed") || d.action.includes("ALERT")) {
-                        actionColor = "var(--secondary)"; // Red for danger
-                        actionIcon = "fa-exclamation-triangle";
-                    }
-
-                    let botBadge = d.visitorType.includes("Bot") 
-                        ? `<span style="background:#e74c3c; color:white; padding:3px 8px; border-radius:12px; font-size:0.7em; font-weight:bold;">BOT</span>` 
-                        : `<span style="background:#2ecc71; color:white; padding:3px 8px; border-radius:12px; font-size:0.7em; font-weight:bold;">HUMAN</span>`;
-
-                    table.innerHTML += `
-                        <tr>
-                            <td style="font-size: 0.85em;">${time}</td>
-                            <td><strong>${d.ip || "N/A"}</strong><br><span style="font-size:0.8em; color:var(--accent);"><i class="fas fa-map-marker-alt"></i> ${d.location}</span></td>
-                            <td style="font-size: 0.85em;">${botBadge} <span style="margin-left:5px; font-weight:bold;">${deviceClass}</span><br><span style="font-size:0.75em; color:#888; display:block; margin-top:3px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${d.device}">${d.device}</span></td>
-                            <td><strong style="color:${actionColor};"><i class="fas ${actionIcon}"></i> ${d.action}</strong>${d.emailAttempt !== "N/A" ? `<br><span style="font-size:0.8em;">Target Email: <b>${d.emailAttempt}</b></span>` : ""}<br><span style="font-size: 0.75em; color: #888;">${d.extraInfo || ""}</span></td>
-                        </tr>
-                    `;
-                });
-            });
-        }
-
-        async function trackAdminLogin(user) {
-            try {
-                const browserInfo = navigator.userAgent || "Unknown Browser";
-                let locationString = "Unknown Location";
-                let ipAddress = "Unknown IP";
-                
-                // Fast 1.5-second timeout per API
-                const fetchWithTimeout = async (url, timeout = 1500) => {
-                    const controller = new AbortController();
-                    const id = setTimeout(() => controller.abort(), timeout);
-                    try { 
-                        const response = await fetch(url, { signal: controller.signal }); 
-                        clearTimeout(id); 
-                        if (!response.ok) throw new Error("HTTP error");
-                        return await response.json(); 
-                    } catch (error) { clearTimeout(id); throw error; }
-                };
-
-                // Same 20+ Fallbacks applied to successful logins!
-                const locationAPIs = [
-                    { url: 'https://ipwho.is/', parse: d => ({ loc: (d.success && d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.ip || null }) },
-                    { url: 'https://get.geojs.io/v1/ip/geo.json', parse: d => ({ loc: (d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.ip || null }) },
-                    { url: 'https://ipapi.co/json/', parse: d => ({ loc: (d.city && d.country_name) ? `${d.city}, ${d.country_name}` : null, ip: d.ip || null }) },
-                    { url: 'https://freeipapi.com/api/json', parse: d => ({ loc: (d.cityName && d.countryName) ? `${d.cityName}, ${d.countryName}` : null, ip: d.ipAddress || null }) },
-                    { url: 'https://ipinfo.io/json', parse: d => ({ loc: (d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.ip || null }) },
-                    { url: 'https://api.db-ip.com/v2/free/self', parse: d => ({ loc: (d.city && d.countryName) ? `${d.city}, ${d.countryName}` : null, ip: d.ipAddress || null }) },
-                    { url: 'https://api.ip.sb/geoip', parse: d => ({ loc: (d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.ip || null }) },
-                    { url: 'https://ip.seeip.org/geoip', parse: d => ({ loc: (d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.ip || null }) },
-                    { url: 'https://api.techniknews.net/ipgeo/', parse: d => ({ loc: (d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.ip || null }) },
-                    { url: 'https://api.myip.com', parse: d => ({ loc: d.country ? d.country : null, ip: d.ip || null }) },
-                    { url: 'https://ifconfig.co/json', parse: d => ({ loc: (d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.ip || null }) },
-                    { url: 'https://ip-api.io/json', parse: d => ({ loc: (d.city && d.country_name) ? `${d.city}, ${d.country_name}` : null, ip: d.ip || null }) },
-                    { url: 'https://api.ipbase.com/v1/json/', parse: d => ({ loc: (d.city && d.country_name) ? `${d.city}, ${d.country_name}` : null, ip: d.ip || null }) },
-                    { url: 'https://extreme-ip-lookup.com/json/', parse: d => ({ loc: (d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.query || null }) },
-                    { url: 'https://api.iplocation.net/?ip=', parse: d => ({ loc: d.country_name ? d.country_name : null, ip: d.ip || null }) },
-                    { url: 'https://api.infoip.io/', parse: d => ({ loc: (d.city && d.country) ? `${d.city}, ${d.country}` : null, ip: d.ip || null }) },
-                    { url: 'https://ipapi.com/ip_api.php?ip=', parse: d => ({ loc: (d.city && d.country_name) ? `${d.city}, ${d.country_name}` : null, ip: d.ip || null }) },
-                    { url: 'https://api.hostip.info/get_json.php', parse: d => ({ loc: (d.city && d.country_name) ? `${d.city}, ${d.country_name}` : null, ip: d.ip || null }) },
-                    { url: 'https://jsonip.com', parse: d => ({ loc: null, ip: d.ip || null }) },
-                    { url: 'https://ifconfig.me/all.json', parse: d => ({ loc: null, ip: d.ip_addr || null }) } 
-                ];
-
-                for (const api of locationAPIs) {
-                    try {
-                        const data = await fetchWithTimeout(api.url);
-                        const parsed = api.parse(data);
-                        if (parsed && (parsed.loc || parsed.ip)) {
-                            if (parsed.loc) locationString = parsed.loc;
-                            if (parsed.ip) ipAddress = parsed.ip;
-                            if (locationString !== "Unknown Location") break; 
-                        }
-                    } catch (err) { }
-                }
-
-                await db.collection('loginHistory').add({
-                    email: user.email || "Unknown Email",
-                    uid: user.uid,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    device: browserInfo,
-                    location: locationString,
-                    ip: ipAddress
-                });
-                sessionStorage.setItem('loginTracked', 'true');
-            } catch(e) { console.error("Critical error in trackAdminLogin:", e); }
-        }
-
+        await db.collection('loginHistory').add({
+            email: user.email || "Unknown Email",
+            uid: user.uid,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            device: browserInfo,
+            location: loc,
+            ip: ip
+        });
+        sessionStorage.setItem('loginTracked', 'true');
+    } catch(e) { console.error("Critical error in trackAdminLogin:", e); }
+}
         // --- DASHBOARD ---
         async function loadDashboard() {
             const [artworksSnap, ordersSnap] = await Promise.all([db.collection('artworks').get(), db.collection('orders').get()]);
@@ -2480,4 +2373,5 @@ async function monitorGitHubBuild(token) {
 </script>
 </body>
 </html>
+
 
