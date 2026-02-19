@@ -376,6 +376,9 @@
                         <span id="artworks-selection-count">0 items selected</span>
                         <button class="btn btn-danger" id="bulk-delete-artworks-btn"><i class="fas fa-trash"></i> Delete to Trash</button>
                         <button class="btn btn-warning" id="bulk-edit-artworks-btn"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="btn btn-info" id="bulk-migrate-btn" onclick="bulkMigrateArtworks()">
+        <i class="fas fa-rocket"></i> Smart Bulk Migrate
+    </button>
                     </div>
                     <div class="table-responsive">
                         <table class="artworks-list">
@@ -2368,6 +2371,7 @@ async function bulkMigrateArtworks() {
     
 </body>
 </html>
+
 
 
 
