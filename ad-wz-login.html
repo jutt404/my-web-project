@@ -376,7 +376,9 @@
                         <span id="artworks-selection-count">0 items selected</span>
                         <button class="btn btn-danger" id="bulk-delete-artworks-btn"><i class="fas fa-trash"></i> Delete to Trash</button>
                         <button class="btn btn-warning" id="bulk-edit-artworks-btn"><i class="fas fa-edit"></i> Edit</button>
-                       
+                       <button class="btn btn-info" id="bulk-migrate-btn" onclick="fixWaitPlaceholders()">
+        <i class="fas fa-magic"></i> Fix Wait Images
+    </button>
     </button>
                     </div>
                     <div class="table-responsive">
@@ -2253,6 +2255,65 @@ function loadLoginHistory() {
         });
     });
 }
+
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function fixWaitPlaceholders() {
+    const GITHUB_TOKEN = prompt("Enter GitHub Token to fix 'Wait...' images:");
+    if (!GITHUB_TOKEN) return;
+
+    const btn = document.getElementById('bulk-migrate-btn');
+    btn.disabled = true;
+
+    const OWNER = 'jutt404'; 
+    const REPO = 'my-web-project'; 
+
+    try {
+        const snap = await db.collection('artworks').get();
+        let fixedCount = 0;
+
+        for (const doc of snap.docs) {
+            const d = doc.data();
+            // Check if the file on GitHub still has the '_0' name
+            const oldPathWithZero = `img/${d.serviceId}_0.jpg`;
+            const targetCleanPath = `img/${d.serviceId}.jpg`;
+
+            btn.innerHTML = `<i class="fas fa-magic fa-spin"></i> Fixing ${d.serviceId}...`;
+
+            const getFile = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${oldPathWithZero}`, {
+                headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
+            });
+
+            if (getFile.ok) {
+                const fileData = await getFile.json();
+                
+                // Create the clean copy (e.g., AT1093.jpg)
+                const createNew = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${targetCleanPath}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: `Fixing Wait: ${d.serviceId}.jpg`, content: fileData.content })
+                });
+
+                if (createNew.ok) {
+                    // Delete the old version with '_0'
+                    await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${oldPathWithZero}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: `Cleaning up old file`, sha: fileData.sha })
+                    });
+
+                    // Sync the database to match
+                    await db.collection('artworks').doc(doc.id).update({ imageUrls: [targetCleanPath] });
+                    fixedCount++;
+                }
+            }
+            await sleep(2500); // Wait for GitHub Actions
+        }
+        btn.innerHTML = `<i class="fas fa-check"></i> Fixed ${fixedCount} Items!`;
+        btn.style.background = "#27ae60";
+        setTimeout(() => { btn.disabled = false; loadArtworks(); }, 3000);
+    } catch (e) { alert("Error: " + e.message); btn.disabled = false; }
+}
 // --- 1. CLEAN TABLE VIEW (Buttons Removed) ---
 function loadArtworks() {
     const table = document.getElementById('artworks-table');
@@ -2298,6 +2359,7 @@ function loadArtworks() {
 </script>
 </body>
 </html>
+
 
 
 
