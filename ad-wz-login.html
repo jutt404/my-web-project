@@ -1624,11 +1624,11 @@
     });
 }
 
-      async function addArtwork(e) {
+     async function addArtwork(e) {
     e.preventDefault();
     
     const sourceType = document.querySelector('input[name="img_source"]:checked').value;
-    const serviceId = await getNextServiceId(); // Generate ID first for naming
+    const serviceId = await getNextServiceId(); 
     let finalImagePaths = [];
 
     // --- CASE A: DIRECT UPLOAD TO GITHUB ---
@@ -1636,8 +1636,13 @@
         const fileInput = document.getElementById('imageUpload');
         if (fileInput.files.length === 0) return alert("Please select a file to upload.");
 
-        const GITHUB_TOKEN = prompt("Enter GitHub Token to upload image:");
-        if (!GITHUB_TOKEN) return;
+        // SESSION MEMORY TRICK: Only ask if we don't have it yet
+        let GITHUB_TOKEN = sessionStorage.getItem('gh_upload_token');
+        if (!GITHUB_TOKEN) {
+            GITHUB_TOKEN = prompt("Enter your GitHub Personal Access Token (this will be remembered for this session):");
+            if (!GITHUB_TOKEN) return;
+            sessionStorage.setItem('gh_upload_token', GITHUB_TOKEN); // Save for next time
+        }
 
         const file = fileInput.files[0];
         const fileName = `${serviceId}.jpg`;
@@ -1647,26 +1652,29 @@
 
         showStatus(`Uploading ${fileName} to GitHub...`, "info");
 
-        // Convert file to Base64
         const base64data = await new Promise((resolve) => {
             const reader = new FileReader();
             reader.onloadend = () => resolve(reader.result.split(',')[1]);
             reader.readAsDataURL(file);
         });
 
-        // Push to GitHub img/ folder
-        const upload = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${newPath}`, {
-            method: 'PUT',
-            headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: `Uploaded ${fileName} via Admin`, content: base64data })
-        });
+        try {
+            const upload = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${newPath}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: `Uploaded ${fileName} via Admin`, content: base64data })
+            });
 
-        if (!upload.ok) {
-            const err = await upload.json();
-            return alert("GitHub Upload Failed: " + err.message);
+            if (!upload.ok) {
+                const err = await upload.json();
+                // If the token is bad, clear memory so it asks again next time
+                if(upload.status === 401) sessionStorage.removeItem('gh_upload_token');
+                return alert("GitHub Upload Failed: " + err.message);
+            }
+            finalImagePaths = [newPath]; 
+        } catch (err) {
+            return alert("Network Error: " + err.message);
         }
-        
-        finalImagePaths = [newPath]; // Store clean path: img/AT1093.jpg
     } 
     // --- CASE B: OLD LINK METHOD ---
     else {
@@ -2378,6 +2386,7 @@ function toggleImageInput(type) {
 </script>
 </body>
 </html>
+
 
 
 
