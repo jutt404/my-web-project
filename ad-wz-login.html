@@ -2227,113 +2227,113 @@ function loadLoginHistory() {
         });
     });
 }
-// 1. Safety Delay (Prevents GitHub from blocking your account)
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// 2. The Migration Tool (Handles 1 image or 10 images automatically)
 async function migrateImageToGitHub(buttonElement, docId, serviceId, imageUrls, manualToken = null) {
     const GITHUB_TOKEN = manualToken || prompt("Enter your GitHub Personal Access Token:");
     if (!GITHUB_TOKEN) return false;
 
-    if (buttonElement) {
-        buttonElement.disabled = true;
-        buttonElement.innerText = "Processing...";
-    }
-
     const OWNER = 'jutt404'; 
     const REPO = 'my-web-project'; 
-    const urls = Array.isArray(imageUrls) ? imageUrls : [imageUrls]; // Handle single or multiple images
-    const newLocalPaths = [];
+    
+    // Ensure we are working with an array
+    let urls = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
+
+    // --- SMART SKIP LOGIC ---
+    // 1. Skip if the product has more than 1 image
+    if (urls.length > 1) {
+        console.log(`Skipping ${serviceId}: Multiple images detected.`);
+        return "skipped_multiple";
+    }
+
+    const originalUrl = urls[0];
+
+    // 2. Skip if the image is already migrated (e.g., starts with 'img/')
+    if (!originalUrl || !originalUrl.startsWith('http')) {
+        console.log(`Skipping ${serviceId}: Already migrated.`);
+        return "skipped_done";
+    }
+
+    if (buttonElement) {
+        buttonElement.disabled = true;
+        buttonElement.innerText = "Migrating...";
+    }
 
     try {
-        for (let i = 0; i < urls.length; i++) {
-            const originalUrl = urls[i];
-            
-            // If it's already a local path, keep it and skip
-            if (!originalUrl || !originalUrl.startsWith('http')) {
-                if (originalUrl) newLocalPaths.push(originalUrl);
-                continue;
-            }
+        // Naming for single image
+        const fileName = `${serviceId || docId}_0.jpg`;
+        const newPath = `img/${fileName}`;
+        const githubApiUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${newPath}`;
 
-            // Filename format: AT1093_0.jpg, AT1093_1.jpg, etc.
-            const fileName = `${serviceId || docId}_${i}.jpg`;
-            const newPath = `img/${fileName}`;
-            const githubApiUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${newPath}`;
+        await sleep(2000); // Safety delay
 
-            await sleep(2000); // Critical 2-second wait
-
-            const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(originalUrl)}`;
-            const response = await fetch(proxyUrl);
-            if (!response.ok) continue; 
-            
-            const blob = await response.blob();
-            const base64data = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result.split(',')[1]);
-                reader.readAsDataURL(blob);
-            });
-
-            // Upload to GitHub
-            const upload = await fetch(githubApiUrl, {
-                method: 'PUT',
-                headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: `Migrated ${fileName}`, content: base64data })
-            });
-
-            if (upload.ok || upload.status === 422) {
-                newLocalPaths.push(newPath); // Save the new folder path: "img/AT1093_0.jpg"
-            }
-        }
-
-        // AUTO-FEED: Updates Firebase with all new paths at once
-        await db.collection('artworks').doc(docId).update({ imageUrls: newLocalPaths });
+        const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(originalUrl)}`;
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error("Proxy fetch failed");
         
-        if (buttonElement) {
-            buttonElement.innerText = "Done!";
-            buttonElement.style.background = "#27ae60";
+        const blob = await response.blob();
+        const base64data = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result.split(',')[1]);
+            reader.readAsDataURL(blob);
+        });
+
+        const upload = await fetch(githubApiUrl, {
+            method: 'PUT',
+            headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: `Migrated ${fileName}`, content: base64data })
+        });
+
+        if (upload.ok || upload.status === 422) {
+            await db.collection('artworks').doc(docId).update({ imageUrls: [newPath] });
+            if (buttonElement) {
+                buttonElement.innerText = "Done!";
+                buttonElement.style.background = "#27ae60";
+            }
+            return "success";
         }
-        return true;
     } catch (error) {
-        console.error("Migration failed:", error);
+        console.error(`Migration failed for ${serviceId}:`, error);
         if (buttonElement) buttonElement.innerText = "Error";
-        return false;
+        return "error";
     }
 }
 
-// 3. The "Select All" Fast Work Tool
+// --- The Master Bulk Button ---
 async function bulkMigrateArtworks() {
-    if (selectedArtworks.size === 0) return alert("Select products first!");
-    
-    const token = prompt("Enter GitHub Token for Bulk Work:");
+    if (selectedArtworks.size === 0) return alert("Please select products first!");
+    const token = prompt("Enter GitHub Token:");
     if (!token) return;
 
     const btn = document.getElementById('bulk-migrate-btn');
     btn.disabled = true;
     
-    let count = 0;
+    let successCount = 0;
+    let skippedCount = 0;
     const total = selectedArtworks.size;
 
     for (const id of selectedArtworks) {
-        count++;
-        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Moving Product ${count}/${total}...`;
-        
         const doc = await db.collection('artworks').doc(id).get();
         if (doc.exists) {
             const data = doc.data();
-            // This runs the migration for all images in this product
-            await migrateImageToGitHub(null, id, data.serviceId, data.imageUrls, token);
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Checking ${successCount + skippedCount + 1}/${total}...`;
+            
+            const result = await migrateImageToGitHub(null, id, data.serviceId, data.imageUrls, token);
+            
+            if (result === "success") successCount++;
+            else skippedCount++;
         }
     }
 
-    btn.innerHTML = `<i class="fas fa-check"></i> All Selected Products Migrated!`;
+    btn.innerHTML = `<i class="fas fa-check"></i> Finished: ${successCount} Migrated, ${skippedCount} Skipped`;
     btn.style.background = "#27ae60";
     
     setTimeout(() => {
         btn.disabled = false;
         btn.style.background = "";
         selectedArtworks.clear();
-        loadArtworks(); // Refresh the table to show local paths
-    }, 3000);
+        loadArtworks();
+    }, 5000);
 }
         
     </script>
@@ -2344,6 +2344,7 @@ async function bulkMigrateArtworks() {
     
 </body>
 </html>
+
 
 
 
