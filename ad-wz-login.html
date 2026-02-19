@@ -348,7 +348,7 @@
 
 <div id="img-input-upload" class="form-group" style="display: none;">
     <label for="imageUpload">Select Image File *</label>
-    <input type="file" id="imageUpload" accept="image/*" class="form-control" style="padding: 10px;">
+   <input type="file" id="imageUpload" accept="image/*" class="form-control" style="padding: 10px;" multiple>
     <small style="color: var(--secondary);">Image will be saved as ServiceID.jpg in GitHub img/ folder.</small>
 </div> 
                         <div class="form-group" style="display: flex; gap: 15px; flex-wrap: wrap;">
@@ -1624,66 +1624,73 @@
     });
 }
 
-     async function addArtwork(e) {
+   async function addArtwork(e) {
     e.preventDefault();
     
     const sourceType = document.querySelector('input[name="img_source"]:checked').value;
-    const serviceId = await getNextServiceId(); 
+    const serviceId = await getNextServiceId(); // Generate clean ID for naming
     let finalImagePaths = [];
 
-    // --- CASE A: DIRECT UPLOAD TO GITHUB ---
+    // --- PHASE 1: HANDLING THE IMAGE(S) ---
     if (sourceType === 'upload') {
         const fileInput = document.getElementById('imageUpload');
-        if (fileInput.files.length === 0) return alert("Please select a file to upload.");
+        const files = fileInput.files;
+        if (files.length === 0) return alert("Please select at least one image file.");
 
-        // SESSION MEMORY TRICK: Only ask if we don't have it yet
+        // SESSION MEMORY: Only ask for token once per browser session
         let GITHUB_TOKEN = sessionStorage.getItem('gh_upload_token');
         if (!GITHUB_TOKEN) {
-            GITHUB_TOKEN = prompt("Enter your GitHub Personal Access Token (this will be remembered for this session):");
+            GITHUB_TOKEN = prompt("Enter your GitHub Token (will be remembered for this session):");
             if (!GITHUB_TOKEN) return;
-            sessionStorage.setItem('gh_upload_token', GITHUB_TOKEN); // Save for next time
+            sessionStorage.setItem('gh_upload_token', GITHUB_TOKEN);
         }
 
-        const file = fileInput.files[0];
-        const fileName = `${serviceId}.jpg`;
-        const newPath = `img/${fileName}`;
         const OWNER = 'jutt404'; 
         const REPO = 'my-web-project';
 
-        showStatus(`Uploading ${fileName} to GitHub...`, "info");
+        // Loop through multiple photos
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const fileName = `${serviceId}_${i}.jpg`; // Format: AT1093_0.jpg, AT1093_1.jpg
+            const newPath = `img/${fileName}`;
 
-        const base64data = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(',')[1]);
-            reader.readAsDataURL(file);
-        });
+            showStatus(`Uploading image ${i+1} of ${files.length}...`, "info");
 
-        try {
-            const upload = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${newPath}`, {
-                method: 'PUT',
-                headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: `Uploaded ${fileName} via Admin`, content: base64data })
+            // Convert to Base64 for GitHub API
+            const base64data = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.readAsDataURL(file);
             });
 
-            if (!upload.ok) {
-                const err = await upload.json();
-                // If the token is bad, clear memory so it asks again next time
-                if(upload.status === 401) sessionStorage.removeItem('gh_upload_token');
-                return alert("GitHub Upload Failed: " + err.message);
+            try {
+                const upload = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${newPath}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: `Direct Upload: ${fileName}`, content: base64data })
+                });
+
+                if (upload.ok) {
+                    finalImagePaths.push(newPath); // Save clean path for Firebase
+                } else if (upload.status === 401) {
+                    sessionStorage.removeItem('gh_upload_token'); // Clear bad token
+                    return alert("Token invalid. Please refresh and try again.");
+                }
+            } catch (err) {
+                console.error("Upload error:", err);
             }
-            finalImagePaths = [newPath]; 
-        } catch (err) {
-            return alert("Network Error: " + err.message);
+
+            // THE SAFETY DELAY: 2-second wait to prevent build errors
+            if (i < files.length - 1) await new Promise(r => setTimeout(r, 2000));
         }
     } 
-    // --- CASE B: OLD LINK METHOD ---
+    // --- CASE B: THE OLD LINK METHOD ---
     else {
-        const links = document.getElementById('imageUrls').value.split(',').map(u=>u.trim()).filter(Boolean);
-        if (links.length === 0) return alert("Please enter at least one link.");
-        finalImagePaths = links;
+        finalImagePaths = document.getElementById('imageUrls').value.split(',').map(u=>u.trim()).filter(Boolean);
+        if (finalImagePaths.length === 0) return alert("Please paste at least one image link.");
     }
 
-    // --- SAVE TO FIREBASE ---
+    // --- PHASE 2: DATABASE DATA PREPARATION ---
     const sizes = Array.from(document.querySelectorAll('#size-rows-container .size-row')).map(row => ({
         name: row.querySelector('.size-name').value,
         price: parseFloat(row.querySelector('.size-price').value) || 0,
@@ -1694,7 +1701,7 @@
     const artworkData = {
         title: document.getElementById('title').value,
         artist: document.getElementById('artist').value,
-        imageUrls: finalImagePaths,
+        imageUrls: finalImagePaths, 
         price: parseFloat(document.getElementById('price').value),
         discountPrice: parseFloat(document.getElementById('discountPrice').value) || null,
         stock: parseInt(document.getElementById('stock').value) || 0,
@@ -1706,10 +1713,18 @@
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
+    // --- PHASE 3: FINAL SAVING & AUTO-MONITOR ---
     try {
-        const docRef = await db.collection("artworks").add(artworkData);
-        await logAction('create', 'artworks', docRef.id, null, artworkData, `Created product: ${artworkData.title}`);
-        showStatus(`Artwork added and image hosted!`, "success");
+        await db.collection("artworks").add(artworkData);
+        
+        // Success message for database entry
+        showStatus(`Artwork saved! Starting GitHub Live Monitor...`, "success");
+
+        // START LIVE DEPLOYMENT MONITOR
+        const token = sessionStorage.getItem('gh_upload_token');
+        if (token) monitorGitHubBuild(token); 
+
+        // Reset the form
         document.getElementById('add-artwork-form').reset();
         document.getElementById('size-rows-container').innerHTML = '';
         loadArtworks();
@@ -2382,10 +2397,47 @@ function toggleImageInput(type) {
     document.getElementById('img-input-link').style.display = type === 'link' ? 'block' : 'none';
     document.getElementById('img-input-upload').style.display = type === 'upload' ? 'block' : 'none';
 }
+// --- AUTO-CHECK GITHUB DEPLOYMENT STATUS ---
+async function monitorGitHubBuild(token) {
+    const OWNER = 'jutt404';
+    const REPO = 'my-web-project';
+    const statusEl = document.getElementById('status-message');
+    
+    statusEl.innerHTML = `<i class="fas fa-sync fa-spin"></i> GitHub is building your site... Please wait.`;
+    statusEl.className = "status-message info";
+    statusEl.style.display = "block";
 
+    // Loop until we see 'success'
+    while (true) {
+        try {
+            const response = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/commits/main/check-runs`, {
+                headers: { 'Authorization': `token ${token}` }
+            });
+            const data = await response.json();
+            
+            // Check the 'pages-build-deployment' status
+            const build = data.check_runs.find(run => run.name === 'pages-build-deployment');
+            
+            if (build && build.status === 'completed') {
+                if (build.conclusion === 'success') {
+                    statusEl.innerHTML = `<i class="fas fa-check-circle"></i> SITE UPDATED! Images are now LIVE.`;
+                    statusEl.className = "status-message success";
+                    break; // Stop checking
+                } else {
+                    statusEl.innerHTML = `<i class="fas fa-times-circle"></i> GitHub Build Failed. Check Actions.`;
+                    statusEl.className = "status-message error";
+                    break;
+                }
+            }
+        } catch (e) { console.error("Status check failed", e); }
+        
+        await new Promise(r => setTimeout(r, 10000)); // Check every 10 seconds
+    }
+}
 </script>
 </body>
 </html>
+
 
 
 
