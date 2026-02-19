@@ -2254,6 +2254,48 @@ function loadLoginHistory() {
         });
     });
 }
+// --- 1. CLEAN TABLE VIEW (Buttons Removed) ---
+function loadArtworks() {
+    const table = document.getElementById('artworks-table');
+    db.collection('artworks').orderBy('createdAt', 'desc').get().then(snap => {
+        table.innerHTML = '';
+        if (snap.empty) { 
+            table.innerHTML = '<tr><td colspan="7">No artworks found.</td></tr>'; 
+            return; 
+        }
+        
+        snap.forEach(doc => {
+            const d = doc.data();
+            const row = table.insertRow();
+            
+            let priceDisplay = `PKR ${d.price.toLocaleString()}`;
+            if(d.discountPrice) {
+                priceDisplay = `<span style="text-decoration:line-through; color:var(--secondary); font-size:0.85em;">PKR ${d.price}</span><br><strong>PKR ${d.discountPrice}</strong>`;
+            }
+
+            // Path logic for Auto-Showing images
+            const displayImg = (d.imageUrls && d.imageUrls.length) ? d.imageUrls[0] : '';
+            const finalImgSrc = displayImg.startsWith('http') ? displayImg : `./${displayImg}`;
+
+            row.innerHTML = `
+                <td><input type="checkbox" class="table-checkbox" data-id="${doc.id}"></td>
+                <td><img src="${finalImgSrc}" class="artwork-image" onerror="this.src='https://placehold.co/80x60?text=Wait...'"></td>
+                <td>${d.serviceId || 'N/A'}</td>
+                <td>${d.title}</td>
+                <td>${priceDisplay}</td>
+                <td>${d.category}</td>
+                <td>
+                    <button class="action-btn edit-btn" onclick="editArtwork('${doc.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="action-btn delete-btn" onclick="deleteArtwork('${doc.id}')"><i class="fas fa-trash"></i></button>
+                </td>`;
+
+            row.querySelector('.table-checkbox').addEventListener('change', e => handleSelectSingle('artworks', e.target.dataset.id, e.target.checked));
+        });
+        updateSelectionCount('artworks');
+    });
+}
+
+// --- 2. SMART MIGRATION LOGIC (Single Images Only) ---
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function migrateImageToGitHub(buttonElement, docId, serviceId, imageUrls, manualToken = null) {
@@ -2263,36 +2305,27 @@ async function migrateImageToGitHub(buttonElement, docId, serviceId, imageUrls, 
     const OWNER = 'jutt404'; 
     const REPO = 'my-web-project'; 
     
-    // Ensure we are working with an array
     let urls = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
 
-    // --- SMART SKIP LOGIC ---
-    // 1. Skip if the product has more than 1 image
+    // Rule: Skip if product has more than 1 image
     if (urls.length > 1) {
-        console.log(`Skipping ${serviceId}: Multiple images detected.`);
+        console.log(`Skipping ${serviceId}: Multi-image detected.`);
         return "skipped_multiple";
     }
 
     const originalUrl = urls[0];
 
-    // 2. Skip if the image is already migrated (e.g., starts with 'img/')
+    // Rule: Skip if already a local "img/" path
     if (!originalUrl || !originalUrl.startsWith('http')) {
-        console.log(`Skipping ${serviceId}: Already migrated.`);
         return "skipped_done";
     }
 
-    if (buttonElement) {
-        buttonElement.disabled = true;
-        buttonElement.innerText = "Migrating...";
-    }
-
     try {
-        // Naming for single image
         const fileName = `${serviceId || docId}_0.jpg`;
         const newPath = `img/${fileName}`;
         const githubApiUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${newPath}`;
 
-        await sleep(2000); // Safety delay
+        await sleep(2000); // Safety delay for GitHub Actions
 
         const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(originalUrl)}`;
         const response = await fetch(proxyUrl);
@@ -2313,23 +2346,18 @@ async function migrateImageToGitHub(buttonElement, docId, serviceId, imageUrls, 
 
         if (upload.ok || upload.status === 422) {
             await db.collection('artworks').doc(docId).update({ imageUrls: [newPath] });
-            if (buttonElement) {
-                buttonElement.innerText = "Done!";
-                buttonElement.style.background = "#27ae60";
-            }
             return "success";
         }
     } catch (error) {
         console.error(`Migration failed for ${serviceId}:`, error);
-        if (buttonElement) buttonElement.innerText = "Error";
         return "error";
     }
 }
 
-// --- The Master Bulk Button ---
+// --- 3. BULK ACTION CONTROLLER ---
 async function bulkMigrateArtworks() {
     if (selectedArtworks.size === 0) return alert("Please select products first!");
-    const token = prompt("Enter GitHub Token:");
+    const token = prompt("Enter GitHub Token for Fast Migration:");
     if (!token) return;
 
     const btn = document.getElementById('bulk-migrate-btn');
@@ -2343,7 +2371,7 @@ async function bulkMigrateArtworks() {
         const doc = await db.collection('artworks').doc(id).get();
         if (doc.exists) {
             const data = doc.data();
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Checking ${successCount + skippedCount + 1}/${total}...`;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing ${successCount + skippedCount + 1}/${total}...`;
             
             const result = await migrateImageToGitHub(null, id, data.serviceId, data.imageUrls, token);
             
@@ -2352,7 +2380,7 @@ async function bulkMigrateArtworks() {
         }
     }
 
-    btn.innerHTML = `<i class="fas fa-check"></i> Finished: ${successCount} Migrated, ${skippedCount} Skipped`;
+    btn.innerHTML = `<i class="fas fa-check"></i> Done: ${successCount} Moved, ${skippedCount} Skipped`;
     btn.style.background = "#27ae60";
     
     setTimeout(() => {
@@ -2362,17 +2390,9 @@ async function bulkMigrateArtworks() {
         loadArtworks();
     }, 5000);
 }
-        
-    </script>
-    
+</script>
 </body>
 </html>
-    </script>
-    
-</body>
-</html>
-
-
 
 
 
