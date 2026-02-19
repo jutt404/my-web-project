@@ -2284,7 +2284,7 @@ function loadLoginHistory() {
                     buttonElement.innerText = "Done!";
                     buttonElement.style.background = "#27ae60"; // Green success color
                     buttonElement.style.opacity = "1";
-                } else {
+               } else {
                     const err = await uploadResponse.json();
                     throw new Error(err.message);
                 }
@@ -2294,8 +2294,21 @@ function loadLoginHistory() {
                 buttonElement.style.background = "#e74c3c";
                 alert("Upload Error: " + err.message);
             }
+        }; // <-- Closes reader.onloadend
+    } catch (error) {
+        console.error(error);
+        buttonElement.innerText = "Failed";
+        buttonElement.style.background = "#e74c3c";
+        alert("Fetch Error: " + error.message);
+    }
+} // <-- Closes the main function
     </script>
     
 </body>
 </html>
+    </script>
+    
+</body>
+</html>
+
 
