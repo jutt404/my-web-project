@@ -376,8 +376,7 @@
                         <span id="artworks-selection-count">0 items selected</span>
                         <button class="btn btn-danger" id="bulk-delete-artworks-btn"><i class="fas fa-trash"></i> Delete to Trash</button>
                         <button class="btn btn-warning" id="bulk-edit-artworks-btn"><i class="fas fa-edit"></i> Edit</button>
-                        <button class="btn btn-info" id="bulk-migrate-btn" onclick="bulkMigrateArtworks()">
-        <i class="fas fa-rocket"></i> Smart Bulk Migrate
+                       
     </button>
                     </div>
                     <div class="table-responsive">
@@ -2295,104 +2294,11 @@ function loadArtworks() {
     });
 }
 
-// --- 2. SMART MIGRATION LOGIC (Single Images Only) ---
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-async function migrateImageToGitHub(buttonElement, docId, serviceId, imageUrls, manualToken = null) {
-    const GITHUB_TOKEN = manualToken || prompt("Enter your GitHub Personal Access Token:");
-    if (!GITHUB_TOKEN) return false;
-
-    const OWNER = 'jutt404'; 
-    const REPO = 'my-web-project'; 
-    
-    let urls = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
-
-    // Rule: Skip if product has more than 1 image
-    if (urls.length > 1) {
-        console.log(`Skipping ${serviceId}: Multi-image detected.`);
-        return "skipped_multiple";
-    }
-
-    const originalUrl = urls[0];
-
-    // Rule: Skip if already a local "img/" path
-    if (!originalUrl || !originalUrl.startsWith('http')) {
-        return "skipped_done";
-    }
-
-    try {
-        const fileName = `${serviceId || docId}_0.jpg`;
-        const newPath = `img/${fileName}`;
-        const githubApiUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${newPath}`;
-
-        await sleep(2000); // Safety delay for GitHub Actions
-
-        const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(originalUrl)}`;
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error("Proxy fetch failed");
-        
-        const blob = await response.blob();
-        const base64data = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(',')[1]);
-            reader.readAsDataURL(blob);
-        });
-
-        const upload = await fetch(githubApiUrl, {
-            method: 'PUT',
-            headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: `Migrated ${fileName}`, content: base64data })
-        });
-
-        if (upload.ok || upload.status === 422) {
-            await db.collection('artworks').doc(docId).update({ imageUrls: [newPath] });
-            return "success";
-        }
-    } catch (error) {
-        console.error(`Migration failed for ${serviceId}:`, error);
-        return "error";
-    }
-}
-
-// --- 3. BULK ACTION CONTROLLER ---
-async function bulkMigrateArtworks() {
-    if (selectedArtworks.size === 0) return alert("Please select products first!");
-    const token = prompt("Enter GitHub Token for Fast Migration:");
-    if (!token) return;
-
-    const btn = document.getElementById('bulk-migrate-btn');
-    btn.disabled = true;
-    
-    let successCount = 0;
-    let skippedCount = 0;
-    const total = selectedArtworks.size;
-
-    for (const id of selectedArtworks) {
-        const doc = await db.collection('artworks').doc(id).get();
-        if (doc.exists) {
-            const data = doc.data();
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing ${successCount + skippedCount + 1}/${total}...`;
-            
-            const result = await migrateImageToGitHub(null, id, data.serviceId, data.imageUrls, token);
-            
-            if (result === "success") successCount++;
-            else skippedCount++;
-        }
-    }
-
-    btn.innerHTML = `<i class="fas fa-check"></i> Done: ${successCount} Moved, ${skippedCount} Skipped`;
-    btn.style.background = "#27ae60";
-    
-    setTimeout(() => {
-        btn.disabled = false;
-        btn.style.background = "";
-        selectedArtworks.clear();
-        loadArtworks();
-    }, 5000);
-}
 </script>
 </body>
 </html>
+
 
 
 
