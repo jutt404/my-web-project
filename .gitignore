@@ -1,0 +1,26 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Node modules (if you use npm in the future)
+node_modules/
+
+# Environment variables (keep your passwords safe!)
+.env
+
+# --- HTML FILE RULES ---
+# Ignore all HTML files
+*.html
+
+# BUT keep these specific website files (including your admin and new terms file)
+!index.html
+!product.html
+!protector.html
+!receipt.html
+!shipping.html
+!checkout.html
+!faq.html
+!payment.html
+!privacy.html
+!terms.html
+!ad-wz-login.html
