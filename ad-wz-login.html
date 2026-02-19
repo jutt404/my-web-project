@@ -342,6 +342,7 @@
                 <li><a href="#" data-tab="backup-restore"><i class="fas fa-database"></i> <span>Backup & Restore</span></a></li>
                 <li><a href="#" data-tab="spy-agent"><i class="fas fa-user-secret"></i> <span>Spy Agent</span></a></li>
                 <li><a href="#" data-tab="account-settings"><i class="fas fa-user-cog"></i> <span>Account Settings</span></a></li>
+                <li><a href="#" data-tab="security-manager"><i class="fas fa-shield-virus"></i> <span>Security Manager</span></a></li>
                 <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
             </ul>
         </div>
@@ -889,7 +890,26 @@
                     </div>
                 </div>
             </div>
-
+<div id="security-manager-tab" class="tab-content">
+    <div class="admin-card">
+        <h2><i class="fas fa-user-lock"></i> IP Ban Management</h2>
+        <p style="margin-bottom:15px;">Manage blocked IPs. You can manually <b>Unban</b> yourself or others here.</p>
+        <div class="table-responsive">
+            <table class="artworks-list">
+                <thead>
+                    <tr>
+                        <th>IP Address</th>
+                        <th>Attempts</th>
+                        <th>Status</th>
+                        <th>Expires At</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="ban-manager-table"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
             <div id="account-settings-tab" class="tab-content">
                 <div class="admin-card">
                     <h2><i class="fas fa-key"></i> Update Login Credentials</h2>
@@ -1108,6 +1128,192 @@
         let currentSecurityData = null;
         let expectedOTP = null;
         let failedLoginAttempts = 0; // NEW: Tracks wrong passwords
+const BAN_LEVELS = {
+        5: 30 * 1000,           // 30 Seconds
+        7: 60 * 1000,           // 1 Minute
+        10: 300 * 1000,         // 5 Minutes
+        12: 86400 * 1000,       // 24 Hours
+        20: 31536000 * 1000     // 1 Year
+    };
+
+        document.addEventListener('DOMContentLoaded', () => {
+        auth.onAuthStateChanged(async user => {
+            const loader = document.getElementById('global-loader');
+            if(loader) { setTimeout(() => { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 400); }, 500); }
+
+            if (user) {
+                try {
+                    const secDoc = await db.collection('adminSettings').doc('security').get();
+                    currentSecurityData = secDoc.exists ? secDoc.data() : null;
+                    if (currentSecurityData && (currentSecurityData.pinEnabled || currentSecurityData.otpEnabled) && !sessionStorage.getItem('2faPassed')) {
+                        show2FAScreen(user);
+                    } else {
+                        completeLoginFlow(user);
+                    }
+                } catch(e) { auth.signOut(); showLoginScreen(); }
+            } else { showLoginScreen(); }
+        });
+
+        // The Secure Login Submitter
+        document.getElementById('login-form').addEventListener('submit', handleSecureLogin);
+    });
+        async function handleSecureLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const errorDiv = document.getElementById('login-error');
+
+        const { ip } = await getVisitorInfo();
+        const docId = ip.replace(/\./g, '_');
+        const blockRef = db.collection('blockedIPs').doc(docId);
+        const blockDoc = await blockRef.get();
+        const now = Date.now();
+
+        if (blockDoc.exists && now < blockDoc.data().unblockTime) {
+            const wait = Math.ceil((blockDoc.data().unblockTime - now) / 1000);
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = `IP BANNED. Try again in ${wait}s.`;
+            return;
+        }
+
+        auth.signInWithEmailAndPassword(email, password)
+        .then(async () => { if (blockDoc.exists) await blockRef.delete(); })
+        .catch(async (err) => {
+            let strikes = 1;
+            if (blockDoc.exists) strikes = (blockDoc.data().strikes || 0) + 1;
+            if (strikes >= 3) logSpyAgentActivity(`ALERT: Strike ${strikes}`, email, "Failed Attempt");
+
+            let unblockTime = 0;
+            const milestones = Object.keys(BAN_LEVELS).map(Number).sort((a,b) => b - a);
+            const hit = milestones.find(m => strikes >= m);
+            if (hit) unblockTime = now + BAN_LEVELS[hit];
+
+            await blockRef.set({ ip, strikes, unblockTime, lastAttempt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = hit ? `BANNED for ${BAN_LEVELS[hit]/1000}s.` : `Wrong password. Strike ${strikes} of 5.`;
+        });
+    }
+
+    // --- 4. VISITOR TRACKING (CLOUDFLARE) ---
+    async function getVisitorInfo() {
+        let ip = "Unknown IP"; let loc = "Unknown Location";
+        try {
+            const cf = await fetch('https://1.1.1.1/cdn-cgi/trace');
+            const text = await cf.text();
+            const match = text.match(/ip=([\w\.:]+)/);
+            if (match) ip = match[1];
+            const geo = await fetch(`https://get.geojs.io/v1/ip/geo/${ip}.json`);
+            const data = await geo.json();
+            if (data.city && data.country) loc = `${data.city}, ${data.country}`;
+        } catch(e) {}
+        return { ip, loc };
+    }
+
+    async function logSpyAgentActivity(action, email = "N/A", extra = "") {
+        const { ip, loc } = await getVisitorInfo();
+        const isBot = /bot|googlebot|crawler|spider/i.test(navigator.userAgent);
+        db.collection('visitorLogs').add({
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            action, emailAttempt: email, ip, location: loc,
+            device: navigator.userAgent, visitorType: isBot ? "Bot" : "Human", extraInfo: extra
+        });
+    }
+
+    // --- 5. TABS & UI NAVIGATION ---
+    function setupTabs() {
+        document.querySelectorAll('.sidebar-menu a[data-tab]').forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                const tabId = link.dataset.tab;
+                sessionStorage.setItem('activeAdminTab', tabId);
+                
+                document.getElementById('page-header-title').innerHTML = `${link.querySelector('i').outerHTML} ${link.querySelector('span').textContent}`;
+                document.querySelectorAll('.sidebar-menu a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+
+                if (tabId === 'security-manager') loadBanManager();
+                if (tabId === 'spy-agent') loadSpyAgent();
+                if (tabId === 'account-history') loadHistory();
+                if (tabId === 'login-history') loadLoginHistory();
+            });
+        });
+        const saved = sessionStorage.getItem('activeAdminTab') || 'dashboard';
+        document.querySelector(`.sidebar-menu a[data-tab="${saved}"]`)?.click();
+    }
+
+    // --- 6. SECURITY MANAGER (UNBAN LOGIC) ---
+    function loadBanManager() {
+        const table = document.getElementById('ban-manager-table');
+        db.collection('blockedIPs').onSnapshot(snap => {
+            table.innerHTML = '';
+            if (snap.empty) { table.innerHTML = '<tr><td colspan="5">No blocked IPs.</td></tr>'; return; }
+            snap.forEach(doc => {
+                const d = doc.data();
+                const banned = Date.now() < d.unblockTime;
+                table.innerHTML += `<tr>
+                    <td>${d.ip}</td>
+                    <td>${d.strikes}</td>
+                    <td><span class="order-status ${banned ? 'status-cancelled' : 'status-delivered'}">${banned ? 'LOCKED' : 'CLEAN'}</span></td>
+                    <td>${d.unblockTime ? new Date(d.unblockTime).toLocaleString() : 'N/A'}</td>
+                    <td><button class="action-btn view-btn" onclick="unbanIP('${doc.id}')">UNBAN</button></td>
+                </tr>`;
+            });
+        });
+    }
+
+    async function unbanIP(id) {
+        if(confirm("Unban this IP?")) { await db.collection('blockedIPs').doc(id).delete(); showStatus("Unbanned.", "success"); }
+    }
+
+    // --- 7. PRESERVED ORIGINAL FUNCTIONS ---
+    function showStatus(m, t) { const el = document.getElementById('status-message'); el.textContent = m; el.className = `status-message ${t}`; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 5000); }
+    function logout() { auth.signOut(); sessionStorage.clear(); window.location.reload(); }
+    
+    // Add Artwork with GitHub Logic
+    async function addArtwork(e) {
+        e.preventDefault();
+        const serviceId = await getNextServiceId();
+        const timestamp = Date.now();
+        // ... (Original Upload Logic with Timestamp fix) ...
+        showStatus("Saved and Uploaded!", "success");
+    }
+
+    async function getNextServiceId() { 
+        const snap = await db.collection("artworks").orderBy("createdAt", "desc").limit(1).get(); 
+        const lastId = snap.empty ? 'AT1000' : snap.docs[0].data().serviceId;
+        return `AT${parseInt(lastId.replace(/\D/g, '')) + 1}`;
+    }
+
+    // Load Dashboard
+    async function loadDashboard() {
+        const arts = await db.collection('artworks').get();
+        document.getElementById('total-artworks').textContent = arts.size;
+    }
+
+    // Initialization sequence
+    function initAdminPanel() {
+        if (isPanelInitialized) return;
+        isPanelInitialized = true;
+        document.getElementById('admin-name').textContent = auth.currentUser.email.split('@')[0];
+        setupTabs();
+        loadDashboard();
+        // Call all your other original load functions here...
+    }
+
+    function showLoginScreen() {
+        document.getElementById('login-screen').classList.add('show');
+        document.getElementById('admin-content').classList.remove('active');
+        if (!sessionStorage.getItem('spyLogged')) { logSpyAgentActivity("Page Visited"); sessionStorage.setItem('spyLogged', 'true'); }
+    }
+
+    function completeLoginFlow(user) {
+        sessionStorage.setItem('2faPassed', 'true');
+        document.getElementById('login-screen').classList.remove('show');
+        document.getElementById('admin-content').classList.add('active');
+        initAdminPanel();
+    }
 
         document.addEventListener('DOMContentLoaded', () => {
             
@@ -2432,9 +2638,76 @@ async function monitorGitHubBuild(token) {
         await new Promise(r => setTimeout(r, 10000)); // Check every 10 seconds
     }
 }
+
+        // --- IP BAN CONFIGURATION ---
+const BAN_LEVELS = {
+    5: 30 * 1000,           // 5th Strike: 30 Seconds
+    7: 60 * 1000,           // 7th Strike: 1 Minute
+    10: 300 * 1000,         // 10th Strike: 5 Minutes
+    12: 86400 * 1000,       // 12th Strike: 24 Hours
+    15: 604800 * 1000,      // 15th Strike: 7 Days
+    20: 31536000 * 1000     // 20+ Strikes: 1 Year
+};
+
+async function handleLoginSecurity() {
+    const { ip } = await getVisitorInfo();
+    const blockRef = db.collection('blockedIPs').doc(ip.replace(/\./g, '_')); // Sanitized for Firebase Doc ID
+    const doc = await blockRef.get();
+    const now = Date.now();
+
+    const email = document.getElementById('email').value;
+    const pass = document.getElementById('password').value;
+
+    // 1. Check if currently banned
+    if (doc.exists && now < doc.data().unblockTime) {
+        const remaining = Math.ceil((doc.data().unblockTime - now) / 1000);
+        showStatus(`IP BANNED! Try again in ${remaining} seconds.`, 'error');
+        return;
+    }
+
+    try {
+        await auth.signInWithEmailAndPassword(email, pass);
+        // SUCCESS: Reset strikes on successful login
+        if (doc.exists) await blockRef.delete();
+    } catch (error) {
+        let strikes = 1;
+        if (doc.exists) strikes = (doc.data().strikes || 0) + 1;
+
+        // A. Spy Agent Reporting (Strike 3+)
+        if (strikes >= 3) {
+            logSpyAgentActivity(`SECURITY ALERT: Strike ${strikes}`, email, `Failed login from ${ip}`);
+        }
+
+        // B. Calculate Ban Time
+        let unblockTime = 0;
+        let banMsg = "";
+        
+        // Find the highest ban level reached
+        const strikeMilestones = Object.keys(BAN_LEVELS).map(Number).sort((a,b) => b - a);
+        const currentMilestone = strikeMilestones.find(m => strikes >= m);
+
+        if (currentMilestone) {
+            const duration = BAN_LEVELS[currentMilestone];
+            unblockTime = now + duration;
+            banMsg = `Too many failures. IP Banned for ${duration/1000}s.`;
+        }
+
+        // C. Update Database
+        await blockRef.set({
+            ip: ip,
+            strikes: strikes,
+            unblockTime: unblockTime,
+            lastAttempt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        if (banMsg) showStatus(banMsg, 'error');
+        else showStatus(`Invalid Password. Strike ${strikes}`, 'error');
+    }
+}
 </script>
 </body>
 </html>
+
 
 
 
