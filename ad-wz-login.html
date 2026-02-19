@@ -1663,7 +1663,7 @@
         }
 
    
-   async function addArtwork(e) {
+async function addArtwork(e) {
     e.preventDefault();
     
     const sourceType = document.querySelector('input[name="img_source"]:checked').value;
@@ -1686,11 +1686,13 @@
 
         const OWNER = 'jutt404'; 
         const REPO = 'my-web-project';
+        const timestamp = Date.now(); // <-- FIX: Added timestamp to guarantee unique names
 
         // Loop through multiple photos
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            const fileName = `${serviceId}_${i}.jpg`; // Format: AT1093_0.jpg, AT1093_1.jpg
+            // FIX: Added timestamp to the name so it NEVER throws a 422 "Already Exists" error
+            const fileName = `${serviceId}_${timestamp}_${i}.jpg`; 
             const newPath = `img/${fileName}`;
 
             showStatus(`Uploading image ${i+1} of ${files.length}...`, "info");
@@ -1714,6 +1716,8 @@
                 } else if (upload.status === 401) {
                     sessionStorage.removeItem('gh_upload_token'); // Clear bad token
                     return alert("Token invalid. Please refresh and try again.");
+                } else if (upload.status === 422) {
+                    console.error("422 Error: File already exists or unprocessable data.");
                 }
             } catch (err) {
                 console.error("Upload error:", err);
@@ -2476,3 +2480,4 @@ async function monitorGitHubBuild(token) {
 </script>
 </body>
 </html>
+
