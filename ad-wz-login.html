@@ -2223,6 +2223,36 @@
             }).catch(e => showStatus(e.message, 'error'));
         }
         // --- NEW: LOGIN HISTORY TRACKING (WITH GEOLOCATION) ---
+function loadLoginHistory() {
+    const table = document.getElementById('login-history-table');
+    db.collection('loginHistory').orderBy('timestamp', 'desc').limit(50).get().then(snap => {
+        table.innerHTML = '';
+        if (snap.empty) { table.innerHTML = '<tr><td colspan="4">No logins found.</td></tr>'; return; }
+        snap.forEach(doc => {
+            const d = doc.data();
+            const time = d.timestamp ? d.timestamp.toDate().toLocaleString() : 'Just now';
+            
+            // Clean up the device name
+            let device = "Unknown Device";
+            if (d.device.includes("Win")) device = "Windows PC";
+            if (d.device.includes("Mac")) device = "Mac";
+            if (d.device.includes("iPhone") || d.device.includes("iPad")) device = "iOS Device";
+            if (d.device.includes("Android")) device = "Android Device";
+            
+            // Get location (fallback if it's an old login before we added this feature)
+            const loc = d.location || "Unknown Location";
+            
+            // Add the new column to the table row
+            table.innerHTML += `
+                <tr>
+                    <td>${time}</td>
+                    <td><strong>${d.email}</strong></td>
+                    <td style="font-size: 0.85em; color: var(--secondary);">${device} <br><span style="font-size: 0.8em; color: #888;">${d.device}</span></td>
+                    <td style="font-weight: 500; color: var(--accent);"><i class="fas fa-map-marker-alt"></i> ${loc}</td>
+                </tr>`;
+        });
+    });
+}
 
 function loadArtworks() {
     const table = document.getElementById('artworks-table');
@@ -2275,6 +2305,7 @@ function loadArtworks() {
 </script>
 </body>
 </html>
+
 
 
 
