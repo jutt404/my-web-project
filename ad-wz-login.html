@@ -2247,7 +2247,7 @@ function loadLoginHistory() {
 
     try {
         // 2. Fetch the image using a proxy (bypasses ImgBB's security block)
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(imageUrl)}`;
+       const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(imageUrl)}`;
         const imageResponse = await fetch(proxyUrl);
         if (!imageResponse.ok) throw new Error("Could not fetch image from ImgBB");
         const blob = await imageResponse.blob();
@@ -2310,5 +2310,6 @@ function loadLoginHistory() {
     
 </body>
 </html>
+
 
 
