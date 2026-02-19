@@ -2228,10 +2228,16 @@ function loadLoginHistory() {
     });
 }
 async function migrateImageToGitHub(buttonElement, docId, serviceId, imageUrl) {
+    // This asks YOU for the token so it's never saved in the GitHub file
+    const GITHUB_TOKEN = prompt("Enter your GitHub Personal Access Token:");
+    if (!GITHUB_TOKEN) {
+        alert("Token required to proceed.");
+        return;
+    }
+
     buttonElement.disabled = true;
     buttonElement.innerText = "Transferring...";
 
-    const GITHUB_TOKEN = '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'; 
     const OWNER = 'jutt404'; 
     const REPO = 'my-web-project'; 
     
@@ -2240,11 +2246,9 @@ async function migrateImageToGitHub(buttonElement, docId, serviceId, imageUrl) {
     const githubApiUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${newLocalPath}`;
 
     try {
-        // NEW PROXY: This one is specifically for getting around 403 blocks
         const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(imageUrl)}`;
-        
         const imageResponse = await fetch(proxyUrl);
-        if (!imageResponse.ok) throw new Error("Proxy block: " + imageResponse.status);
+        if (!imageResponse.ok) throw new Error("Proxy failed");
         
         const blob = await imageResponse.blob();
         const reader = new FileReader();
@@ -2256,7 +2260,7 @@ async function migrateImageToGitHub(buttonElement, docId, serviceId, imageUrl) {
                 const uploadResponse = await fetch(githubApiUrl, {
                     method: 'PUT',
                     headers: {
-                        'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                        'Authorization': `token ${GITHUB_TOKEN}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
@@ -2265,26 +2269,23 @@ async function migrateImageToGitHub(buttonElement, docId, serviceId, imageUrl) {
                     })
                 });
 
-                if (uploadResponse.ok || uploadResponse.status === 201 || uploadResponse.status === 422) {
+                if (uploadResponse.ok) {
                     await db.collection('artworks').doc(docId).update({
                         imageUrls: [newLocalPath] 
                     });
                     buttonElement.innerText = "Done!";
-                    buttonElement.style.background = "#27ae60";
                 } else {
                     const err = await uploadResponse.json();
                     throw new Error(err.message);
                 }
             } catch (err) {
                 alert("GitHub Error: " + err.message);
-                buttonElement.innerText = "Retry";
                 buttonElement.disabled = false;
+                buttonElement.innerText = "Retry";
             }
         }; 
     } catch (error) {
-        console.error(error);
-        alert("Fetch Error: Image is protected. Try again in 1 minute.");
-        buttonElement.innerText = "Failed";
+        alert("Error: " + error.message);
         buttonElement.disabled = false;
     }
 }
@@ -2297,6 +2298,7 @@ async function migrateImageToGitHub(buttonElement, docId, serviceId, imageUrl) {
     
 </body>
 </html>
+
 
 
 
