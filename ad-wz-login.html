@@ -431,16 +431,9 @@ body.dark-mode .card-label {
         </p>
     </div>
 </div>
-<div id="img-input-link" class="form-group">
-    <label for="imageUrls">Image URLs (comma-separated) *</label>
-    <textarea id="imageUrls" placeholder="Paste ImgBB links here..."></textarea>
-</div>
 
-<div id="img-input-upload" class="form-group" style="display: none;">
-    <label for="imageUpload">Select Image File *</label>
-   <input type="file" id="imageUpload" accept="image/*" class="form-control" style="padding: 10px;" multiple>
-    <small style="color: var(--secondary);">Image will be saved as ServiceID.jpg in GitHub img/ folder.</small>
-</div> 
+
+
                         <div class="form-group" style="display: flex; gap: 15px; flex-wrap: wrap;">
                             <div style="flex: 1; min-width: 200px;">
                                 <label for="price">Original Price (PKR) *</label>
@@ -1674,46 +1667,7 @@ body.dark-mode .card-label {
             container.appendChild(div);
         }
 
-     function loadArtworks() {
-    const table = document.getElementById('artworks-table');
-    db.collection('artworks').orderBy('createdAt', 'desc').get().then(snap => {
-        table.innerHTML = '';
-        if (snap.empty) {
-            table.innerHTML = '<tr><td colspan="7">No artworks found.</td></tr>';
-            return;
-        }
-        snap.forEach(doc => {
-            const d = doc.data();
-            const row = table.insertRow();
-            
-            // Price Display Logic
-            let priceDisplay = `PKR ${d.price.toLocaleString()}`;
-            if (d.discountPrice) {
-                priceDisplay = `<span style="text-decoration:line-through; color:var(--secondary); font-size:0.85em;">PKR ${d.price}</span><br><strong>PKR ${d.discountPrice}</strong>`;
-            }
-
-            // Path Fix Logic: Ensures images show whether they are ImgBB links or GitHub paths
-            const displayImg = (d.imageUrls && d.imageUrls.length) ? d.imageUrls[0] : '';
-            const finalImgSrc = displayImg.startsWith('http') ? displayImg : `./${displayImg}`;
-
-            row.innerHTML = `
-                <td><input type="checkbox" class="table-checkbox" data-id="${doc.id}"></td>
-                <td><img src="${finalImgSrc}" class="artwork-image" onerror="this.src='https://placehold.co/80x60?text=Wait...'"></td>
-                <td>${d.serviceId || 'N/A'}</td>
-                <td>${d.title}</td>
-                <td>${priceDisplay}</td>
-                <td>${d.category}</td>
-                <td>
-                    <button class="action-btn edit-btn" onclick="editArtwork('${doc.id}')"><i class="fas fa-edit"></i></button>
-                    <button class="action-btn delete-btn" onclick="deleteArtwork('${doc.id}')"><i class="fas fa-trash"></i></button>
-                </td>`;
-
-            row.querySelector('.table-checkbox').addEventListener('change', e => handleSelectSingle('artworks', e.target.dataset.id, e.target.checked));
-        });
-        updateSelectionCount('artworks');
-    });
-}
-
+   
    async function addArtwork(e) {
     e.preventDefault();
     
@@ -2527,6 +2481,7 @@ async function monitorGitHubBuild(token) {
 </script>
 </body>
 </html>
+
 
 
 
