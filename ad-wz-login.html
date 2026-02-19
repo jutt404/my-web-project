@@ -1435,6 +1435,68 @@ async function trackAdminLogin(user) {
         sessionStorage.setItem('loginTracked', 'true');
     } catch(e) { console.error("Critical error in trackAdminLogin:", e); }
 }
+
+        // --- CRASH-PROOF SPY AGENT LOADER ---
+function loadSpyAgent() {
+    const table = document.getElementById('spy-agent-table');
+    if (!table) return;
+
+    db.collection('visitorLogs').orderBy('timestamp', 'desc').limit(50).onSnapshot(snap => {
+        table.innerHTML = '';
+        if (snap.empty) { 
+            table.innerHTML = '<tr><td colspan="4" style="text-align:center;">No visitor logs found.</td></tr>'; 
+            return; 
+        }
+        
+        snap.forEach(doc => {
+            try {
+                const d = doc.data();
+                const time = d.timestamp ? d.timestamp.toDate().toLocaleString() : 'Just now';
+                
+                // SAFE FALLBACKS (Prevents crashes from old data)
+                const deviceStr = d.device || "Unknown Browser";
+                const actionStr = d.action || "Unknown Action";
+                const visitorTypeStr = d.visitorType || "Human User";
+                const emailAttempt = d.emailAttempt || "N/A";
+                const extraInfo = d.extraInfo || "";
+                const ipStr = d.ip || "Unknown IP";
+                const locStr = d.location || "Unknown Location";
+                
+                let deviceClass = "Unknown";
+                if (deviceStr.includes("Win")) deviceClass = "Windows PC";
+                else if (deviceStr.includes("Mac")) deviceClass = "Mac";
+                else if (deviceStr.includes("iPhone") || deviceStr.includes("iPad")) deviceClass = "iOS Device";
+                else if (deviceStr.includes("Android")) deviceClass = "Android Device";
+
+                let actionColor = "var(--info)";
+                let actionIcon = "fa-eye";
+                if (actionStr.includes("Failed") || actionStr.includes("ALERT")) {
+                    actionColor = "var(--secondary)"; // Red for danger
+                    actionIcon = "fa-exclamation-triangle";
+                }
+
+                let botBadge = visitorTypeStr.includes("Bot") 
+                    ? `<span style="background:#e74c3c; color:white; padding:3px 8px; border-radius:12px; font-size:0.7em; font-weight:bold;">BOT</span>` 
+                    : `<span style="background:#2ecc71; color:white; padding:3px 8px; border-radius:12px; font-size:0.7em; font-weight:bold;">HUMAN</span>`;
+
+                table.innerHTML += `
+                    <tr>
+                        <td style="font-size: 0.85em;">${time}</td>
+                        <td><strong>${ipStr}</strong><br><span style="font-size:0.8em; color:var(--accent);"><i class="fas fa-map-marker-alt"></i> ${locStr}</span></td>
+                        <td style="font-size: 0.85em;">${botBadge} <span style="margin-left:5px; font-weight:bold;">${deviceClass}</span><br><span style="font-size:0.75em; color:#888; display:block; margin-top:3px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${deviceStr}">${deviceStr}</span></td>
+                        <td><strong style="color:${actionColor};"><i class="fas ${actionIcon}"></i> ${actionStr}</strong>${emailAttempt !== "N/A" ? `<br><span style="font-size:0.8em;">Target Email: <b>${emailAttempt}</b></span>` : ""}<br><span style="font-size: 0.75em; color: #888;">${extraInfo}</span></td>
+                    </tr>
+                `;
+            } catch(e) {
+                console.error("Error rendering a log row:", e);
+            }
+        });
+    }, error => {
+        // IF FIREBASE BLOCKS IT, IT WILL SHOW HERE INSTEAD OF A BLANK SHEET
+        console.error("Spy Agent Load Error:", error);
+        table.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center; padding: 20px;"><b>Database Blocked:</b> ${error.message}<br>Please check your Firebase Rules.</td></tr>`;
+    });
+}
         // --- DASHBOARD ---
         async function loadDashboard() {
             const [artworksSnap, ordersSnap] = await Promise.all([db.collection('artworks').get(), db.collection('orders').get()]);
@@ -2373,5 +2435,6 @@ async function monitorGitHubBuild(token) {
 </script>
 </body>
 </html>
+
 
 
