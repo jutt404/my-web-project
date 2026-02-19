@@ -2227,13 +2227,10 @@ function loadLoginHistory() {
         });
     });
 }
-
-    async function migrateImageToGitHub(buttonElement, docId, serviceId, imageUrl) {
+async function migrateImageToGitHub(buttonElement, docId, serviceId, imageUrl) {
     buttonElement.disabled = true;
     buttonElement.innerText = "Transferring...";
-    buttonElement.style.opacity = "0.7";
 
-    // ⚠️ CHECK YOUR EMAIL: If GitHub revoked your token, generate a new one and paste it here
     const GITHUB_TOKEN = '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'; 
     const OWNER = 'jutt404'; 
     const REPO = 'my-web-project'; 
@@ -2243,13 +2240,15 @@ function loadLoginHistory() {
     const githubApiUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${newLocalPath}`;
 
     try {
-        // Using the reliable CORSProxy.io
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(imageUrl)}`;
+        // NEW PROXY: This one is specifically for getting around 403 blocks
+        const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(imageUrl)}`;
+        
         const imageResponse = await fetch(proxyUrl);
-        if (!imageResponse.ok) throw new Error("Proxy connection failed");
+        if (!imageResponse.ok) throw new Error("Proxy block: " + imageResponse.status);
+        
         const blob = await imageResponse.blob();
-
         const reader = new FileReader();
+        
         reader.readAsDataURL(blob);
         reader.onloadend = async function() {
             try {
@@ -2271,24 +2270,25 @@ function loadLoginHistory() {
                         imageUrls: [newLocalPath] 
                     });
                     buttonElement.innerText = "Done!";
-                    buttonElement.style.background = "#27ae60"; 
-                    buttonElement.style.opacity = "1";
+                    buttonElement.style.background = "#27ae60";
                 } else {
                     const err = await uploadResponse.json();
                     throw new Error(err.message);
                 }
             } catch (err) {
-                console.error(err);
-                buttonElement.innerText = "Error";
                 alert("GitHub Error: " + err.message);
+                buttonElement.innerText = "Retry";
+                buttonElement.disabled = false;
             }
         }; 
     } catch (error) {
         console.error(error);
+        alert("Fetch Error: Image is protected. Try again in 1 minute.");
         buttonElement.innerText = "Failed";
-        alert("Download Error: " + error.message);
+        buttonElement.disabled = false;
     }
-}<-- Closes the main function
+}
+
     </script>
     
 </body>
@@ -2297,6 +2297,7 @@ function loadLoginHistory() {
     
 </body>
 </html>
+
 
 
 
