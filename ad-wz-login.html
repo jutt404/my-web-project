@@ -1218,6 +1218,7 @@
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const errorDiv = document.getElementById('login-error');
+        const { ip, loc } = await getVisitorInfo();
 
         const docId = ip.replace(/\./g, '_');
         const blockRef = db.collection('blockedIPs').doc(docId);
@@ -1679,13 +1680,15 @@ async function getVisitorInfo() {
 }
 
 // --- UPGRADED SPY AGENT (CLEAN VERSION) ---
+// --- UPGRADED SPY AGENT (CLEAN VERSION) ---
 async function logSpyAgentActivity(actionType, emailAttempt = "N/A", extraInfo = "") {
     try {
         const isBot = /bot|googlebot|crawler|spider|robot|crawling|webdriver/i.test(navigator.userAgent) || navigator.webdriver;
         const visitorType = isBot ? "Bot / Crawler" : "Human User";
         const browserInfo = navigator.userAgent || "Unknown Browser";
 
-       
+        // ADD THIS LINE: Fetch the IP and Location before pushing to Firestore
+        const { ip, loc } = await getVisitorInfo();
 
         await db.collection('visitorLogs').add({
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -2753,6 +2756,7 @@ async function monitorGitHubBuild(token) {
 </script>
 </body>
 </html>
+
 
 
 
