@@ -1105,38 +1105,32 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     
     <script>
-        console.log("Starting Admin Panel Script...");
-        const firebaseConfig = { apiKey: "AIzaSyA4x1fNeC6r6znsm_HMJU1sJTVjeyIIIZU", authDomain: "zoyearrtyweb.firebaseapp.com", projectId: "zoyearrtyweb", storageBucket: "zoyearrtyweb.appspot.com", messagingSenderId: "1033442222787", appId: "1:1033442222787:web:cf008858fd8f3309f87876" };
-        
-        if (typeof firebase === 'undefined') {
-            alert("Error: Firebase failed to load. Please check your internet connection.");
-        } else {
-            firebase.initializeApp(firebaseConfig);
-            console.log("Firebase initialized.");
-        }
-
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-        
-        let selectedArtworks = new Set();
-        let selectedOrders = new Set();
-        let isPanelInitialized = false;
-        let pendingAdminTheme = {};
-        let currentOrderForExport = null;
-
-        // --- CORE INITIALIZATION, TAB MEMORY & 2FA LOGIN SYSTEM ---
-        let currentSecurityData = null;
-        let expectedOTP = null;
-        let failedLoginAttempts = 0; // NEW: Tracks wrong passwords
-const BAN_LEVELS = {
-        5: 30 * 1000,           // 30 Seconds
-        7: 60 * 1000,           // 1 Minute
-        10: 300 * 1000,         // 5 Minutes
-        12: 86400 * 1000,       // 24 Hours
-        20: 31536000 * 1000     // 1 Year
+     
+    console.log("Starting Admin Panel Script...");
+    const firebaseConfig = { 
+        apiKey: "AIzaSyA4x1fNeC6r6znsm_HMJU1sJTVjeyIIIZU", 
+        authDomain: "zoyearrtyweb.firebaseapp.com", 
+        projectId: "zoyearrtyweb", 
+        storageBucket: "zoyearrtyweb.appspot.com", 
+        messagingSenderId: "1033442222787", 
+        appId: "1:1033442222787:web:cf008858fd8f3309f87876" 
     };
 
-        document.addEventListener('DOMContentLoaded', () => {
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    let selectedArtworks = new Set();
+    let selectedOrders = new Set();
+    let isPanelInitialized = false;
+    let currentSecurityData = null;
+    let expectedOTP = null;
+    let currentOrderForExport = null;
+
+    const BAN_LEVELS = { 5: 30000, 7: 60000, 10: 300000, 12: 86400000, 20: 31536000000 };
+
+    // --- 1. CORE AUTH & SECURITY ---
+    document.addEventListener('DOMContentLoaded', () => {
         auth.onAuthStateChanged(async user => {
             const loader = document.getElementById('global-loader');
             if(loader) { setTimeout(() => { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 400); }, 500); }
@@ -1154,15 +1148,16 @@ const BAN_LEVELS = {
             } else { showLoginScreen(); }
         });
 
-        document.getElementById('login-form').addEventListener('submit', handleLoginSecurity);
-        async function handleSecureLogin(e) {
+        document.getElementById('login-form').addEventListener('submit', handleSecureLogin);
+    });
+
+    async function handleSecureLogin(e) {
         if(e) e.preventDefault();
-            const { ip } = await getVisitorInfo();
+     
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const errorDiv = document.getElementById('login-error');
 
-        const { ip } = await getVisitorInfo();
         const docId = ip.replace(/\./g, '_');
         const blockRef = db.collection('blockedIPs').doc(docId);
         const blockDoc = await blockRef.get();
@@ -1180,11 +1175,10 @@ const BAN_LEVELS = {
         .catch(async (err) => {
             let strikes = 1;
             if (blockDoc.exists) strikes = (blockDoc.data().strikes || 0) + 1;
-            if (strikes >= 3) logSpyAgentActivity(`ALERT: Strike ${strikes}`, email, "Failed Attempt");
+            logSpyAgentActivity(`ALERT: Strike ${strikes}`, email, "Failed Attempt");
 
             let unblockTime = 0;
-            const milestones = Object.keys(BAN_LEVELS).map(Number).sort((a,b) => b - a);
-            const hit = milestones.find(m => strikes >= m);
+            const hit = Object.keys(BAN_LEVELS).map(Number).sort((a,b) => b-a).find(m => strikes >= m);
             if (hit) unblockTime = now + BAN_LEVELS[hit];
 
             await blockRef.set({ ip, strikes, unblockTime, lastAttempt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
@@ -1193,7 +1187,7 @@ const BAN_LEVELS = {
         });
     }
 
-    // --- 4. VISITOR TRACKING (CLOUDFLARE) ---
+    // --- 2. TRACKING & SPY AGENT ---
     async function getVisitorInfo() {
         let ip = "Unknown IP"; let loc = "Unknown Location";
         try {
@@ -1209,7 +1203,7 @@ const BAN_LEVELS = {
     }
 
     async function logSpyAgentActivity(action, email = "N/A", extra = "") {
-        const { ip, loc } = await getVisitorInfo();
+        const { ip, loc } = await getVisitorInfo(); // FETCHED HERE FIXES THE CRASH
         const isBot = /bot|googlebot|crawler|spider/i.test(navigator.userAgent);
         db.collection('visitorLogs').add({
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1218,29 +1212,48 @@ const BAN_LEVELS = {
         });
     }
 
-    // --- 5. TABS & UI NAVIGATION ---
+    // --- 3. UI INITIALIZATION ---
+    function completeLoginFlow(user) {
+        sessionStorage.setItem('2faPassed', 'true');
+        document.getElementById('login-screen').classList.remove('show');
+        document.getElementById('admin-content').classList.add('active');
+        initAdminPanel();
+    }
+
+    function initAdminPanel() {
+        if (isPanelInitialized) return;
+        isPanelInitialized = true;
+        document.getElementById('admin-name').textContent = auth.currentUser.email.split('@')[0];
+        setupTabs();
+        loadDashboard();
+        loadArtworks();
+        loadOrders();
+        // Add other loaders here (loadCoupons, loadSiteSettings, etc.)
+    }
+
     function setupTabs() {
         document.querySelectorAll('.sidebar-menu a[data-tab]').forEach(link => {
             link.addEventListener('click', e => {
                 e.preventDefault();
                 const tabId = link.dataset.tab;
                 sessionStorage.setItem('activeAdminTab', tabId);
-                
                 document.getElementById('page-header-title').innerHTML = `${link.querySelector('i').outerHTML} ${link.querySelector('span').textContent}`;
                 document.querySelectorAll('.sidebar-menu a').forEach(l => l.classList.remove('active'));
                 link.classList.add('active');
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 document.getElementById(`${tabId}-tab`).classList.add('active');
 
-                if (tabId === 'security-manager') loadBanManager();
+                // Tab Specific Loading
                 if (tabId === 'spy-agent') loadSpyAgent();
-                if (tabId === 'account-history') loadHistory();
-                if (tabId === 'login-history') loadLoginHistory();
+                if (tabId === 'security-manager') loadBanManager();
             });
         });
         const saved = sessionStorage.getItem('activeAdminTab') || 'dashboard';
         document.querySelector(`.sidebar-menu a[data-tab="${saved}"]`)?.click();
     }
+
+    // Add your remaining helper functions below here (loadDashboard, loadArtworks, etc.)
+    // Just make sure you don't repeat the same function name twice!
 
     // --- 6. SECURITY MANAGER (UNBAN LOGIC) ---
     function loadBanManager() {
@@ -1608,7 +1621,7 @@ async function logSpyAgentActivity(actionType, emailAttempt = "N/A", extraInfo =
         const visitorType = isBot ? "Bot / Crawler" : "Human User";
         const browserInfo = navigator.userAgent || "Unknown Browser";
 
-        const { ip, loc } = await getVisitorInfo();
+       
 
         await db.collection('visitorLogs').add({
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -2644,6 +2657,7 @@ async function monitorGitHubBuild(token) {
 </script>
 </body>
 </html>
+
 
 
 
