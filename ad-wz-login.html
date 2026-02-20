@@ -209,23 +209,7 @@
         body.dark-mode .bar-label { color: var(--dark-text); }
         .bar-value { padding: 5px; font-weight: bold; }
 
-        @media (max-width: 768px) {
-            .sidebar { width: 70px; }
-            .sidebar .logo h2, .sidebar-menu span { display: none; }
-            .main-content { margin-left: 70px; padding: 10px; }
-            .header { flex-direction: column; align-items: flex-start; gap: 10px; }
-            .user-info { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
-            .page-title h1 { font-size: 20px; }
-            .dashboard-grid { grid-template-columns: 1fr; }
-            .admin-card { padding: 15px; }
-            .login-box { padding: 20px; width: 90%; }
-            .modal-content { padding: 15px; }
-            .btn { padding: 10px 18px; }
-            .bulk-actions-container, .delivery-rule, .social-input-group, .gradient-picker { flex-wrap: wrap; }
-            .bar { width: 40px; }
-            .manual-theme-editor.active { grid-template-columns: 1fr; }
-        }
-       /* Premium Toggle Card Styling */
+      /* Premium Toggle Card Styling (Desktop & General) */
         .source-toggle-container {
             display: flex;
             gap: 15px;
@@ -283,6 +267,72 @@
         }
         body.dark-mode .card-label {
             color: var(--dark-text);
+        }
+
+        /* ONE COMBINED MOBILE MEDIA QUERY */
+        @media (max-width: 768px) {
+            /* General Mobile Fixes */
+            .sidebar { width: 70px; }
+            .sidebar .logo h2, .sidebar-menu span { display: none; }
+            .main-content { margin-left: 70px; padding: 10px; }
+            .header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .user-info { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
+            .page-title h1 { font-size: 20px; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .admin-card { padding: 15px; }
+            .login-box { padding: 20px; width: 90%; }
+            .modal-content { padding: 15px; }
+            .btn { padding: 10px 18px; }
+            .bulk-actions-container, .delivery-rule, .social-input-group, .gradient-picker { flex-wrap: wrap; }
+            .bar { width: 40px; }
+            .manual-theme-editor.active { grid-template-columns: 1fr; }
+
+            /* Activity & Trash Mobile Fixes */
+            .history-item {
+                padding: 12px;
+            }
+            .history-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .history-meta > span:first-child {
+                flex-wrap: wrap; 
+                word-break: break-word; 
+                line-height: 1.4;
+            }
+            .history-changes {
+                font-size: 0.8em;
+                overflow-x: auto; 
+            }
+            .history-item .btn {
+                width: 100%; 
+                text-align: center;
+                margin-top: 5px;
+            }
+            .revert-timer {
+                display: block;
+                margin-bottom: 8px;
+                text-align: center;
+            }
+
+            /* Account Settings Mobile Fixes */
+            #account-settings-tab .admin-card {
+                padding: 15px;
+            }
+            #account-settings-tab .toggle-container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            #account-settings-tab .toggle-switch {
+                margin-top: 5px;
+            }
+            #account-settings-tab small {
+                display: block;
+                line-height: 1.4;
+                margin-top: 5px;
+            }
         }
     </style>
 </head>
@@ -1509,8 +1559,8 @@
                     const h = doc.data();
                     const time = h.timestamp ? new Date(h.timestamp.toDate()).toLocaleString() : 'Just now';
                     const isExpired = (h.expiresAt - Date.now()) < 0;
-                    const adminBadge = h.adminEmail ? `<span style="background: rgba(52, 152, 219, 0.1); color: #2980b9; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; margin-left: 10px; border: 1px solid rgba(52, 152, 219, 0.3);"><i class="fas fa-user-shield"></i> ${h.adminEmail}</span>` : '';
-                    
+                  // Removed the hard margin-left and added margin to adapt to wrapping
+const adminBadge = h.adminEmail ? `<span style="background: rgba(52, 152, 219, 0.1); color: #2980b9; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; margin: 2px 0 2px 5px; border: 1px solid rgba(52, 152, 219, 0.3); display: inline-block;"><i class="fas fa-user-shield"></i> ${h.adminEmail}</span>` : '';  
                     let actionButton = '';
                     if (h.action === 'delete') {
                         if (!isExpired) {
@@ -1523,14 +1573,16 @@
 
                     const div = document.createElement('div');
                     div.className = `history-item ${h.action === 'delete' ? 'delete-action' : ''}`;
-                    div.innerHTML = `
-                        <div class="history-meta">
-                            <span style="display: flex; align-items: center;"><strong>${h.action.toUpperCase()}</strong> on ${h.collection} (${h.docId}) ${adminBadge}</span>
-                            <span style="font-size:0.8rem;">${time}</span>
-                        </div>
-                        <div class="history-changes">${h.description || 'No details'}</div>
-                        <div style="text-align:right; margin-top:5px;">${actionButton}</div>
-                    `;
+              div.innerHTML = `
+    <div class="history-meta">
+        <span style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+            <strong>${h.action.toUpperCase()}</strong> on ${h.collection} <span style="word-break: break-all;">(${h.docId})</span> ${adminBadge}
+        </span>
+        <span style="font-size:0.8rem; white-space: nowrap;">${time}</span>
+    </div>
+    <div class="history-changes">${h.description || 'No details'}</div>
+    <div style="text-align:right; margin-top:10px;">${actionButton}</div>
+`;
                     feed.appendChild(div);
                 });
             })
@@ -2657,6 +2709,7 @@ async function monitorGitHubBuild(token) {
 </script>
 </body>
 </html>
+
 
 
 
