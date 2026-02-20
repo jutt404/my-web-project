@@ -26,30 +26,26 @@
    
     <style>
         
-        /* --- Marquee Banner Styles --- */
+ /* --- Optimized Marquee (Matches Product File) --- */
 #marquee-banner {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    padding: 8px 0;
-    z-index: 1100; /* Higher than header (1000) */
+    padding: 10px 0;
+    z-index: 2000; /* Much higher than header */
     overflow: hidden;
     white-space: nowrap;
-    display: none; /* Hidden by default, JS will show it */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: none; /* JS will show this */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }
 
-/* This is the trigger that shows it */
-body.marquee-active #marquee-banner {
-    display: block;
-}
-
-#marquee-banner p {
+#marquee-text {
     display: inline-block;
     padding-left: 100%;
     animation: marquee-animation 25s linear infinite;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 14px;
 }
 
 @keyframes marquee-animation {
@@ -57,22 +53,22 @@ body.marquee-active #marquee-banner {
     100% { transform: translateX(-100%); }
 }
 
-/* Adjust header only when banner is active */
+/* Layout logic to prevent overlapping */
 header {
-    top: 0; 
-    transition: top 0.3s ease;
+    top: 0;
+    transition: top 0.3s ease-in-out;
+    z-index: 1000;
 }
 
-body.marquee-active header {
-    top: 38px; /* Slides header down */
+/* When active, slide the header down smoothly */
+body.marquee-visible header {
+    top: 40px; 
 }
 
-body.marquee-active .hero {
-    padding-top: 118px; /* Prevents text cutoff */
+/* Adjust the Hero section so it doesn't hide under the header */
+body.marquee-visible .hero {
+    padding-top: 140px;
 }
-        
-        /* --- NEW FEATURE: THEME COLORS --- */
-        /* Each theme defines a new color palette. The existing .light-theme class will still work on top of these. */
         
         /* 1. Default (Your Original Gold/Black) */
         body[data-theme="theme-default"] {
@@ -733,6 +729,7 @@ if (installBtn) {
 </script>
 </body>
 </html>
+
 
 
 
