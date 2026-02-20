@@ -1154,11 +1154,10 @@ const BAN_LEVELS = {
             } else { showLoginScreen(); }
         });
 
-        // The Secure Login Submitter
-        document.getElementById('login-form').addEventListener('submit', handleSecureLogin);
-    });
+        document.getElementById('login-form').addEventListener('submit', handleLoginSecurity);
         async function handleSecureLogin(e) {
-        e.preventDefault();
+        if(e) e.preventDefault();
+            const { ip } = await getVisitorInfo();
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const errorDiv = document.getElementById('login-error');
@@ -2639,15 +2638,7 @@ async function monitorGitHubBuild(token) {
     }
 }
 
-        // --- IP BAN CONFIGURATION ---
-const BAN_LEVELS = {
-    5: 30 * 1000,           // 5th Strike: 30 Seconds
-    7: 60 * 1000,           // 7th Strike: 1 Minute
-    10: 300 * 1000,         // 10th Strike: 5 Minutes
-    12: 86400 * 1000,       // 12th Strike: 24 Hours
-    15: 604800 * 1000,      // 15th Strike: 7 Days
-    20: 31536000 * 1000     // 20+ Strikes: 1 Year
-};
+    
 
 async function handleLoginSecurity() {
     const { ip } = await getVisitorInfo();
@@ -2707,6 +2698,7 @@ async function handleLoginSecurity() {
 </script>
 </body>
 </html>
+
 
 
 
