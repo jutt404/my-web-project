@@ -2760,17 +2760,18 @@ async function monitorGitHubBuild(token) {
 }
 
     
-<script>
-    if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
             .then(() => console.log("PWA Service Worker Active"))
-            .catch(err => console.log("PWA failed: ", err));
-    }
-</script>
+            .catch(err => console.error("PWA registration failed: ", err));
+    });
+}
 
 </script>
 </body>
 </html>
+
 
 
 
