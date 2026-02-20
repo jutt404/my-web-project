@@ -2640,64 +2640,11 @@ async function monitorGitHubBuild(token) {
 
     
 
-async function handleLoginSecurity() {
-    const { ip } = await getVisitorInfo();
-    const blockRef = db.collection('blockedIPs').doc(ip.replace(/\./g, '_')); // Sanitized for Firebase Doc ID
-    const doc = await blockRef.get();
-    const now = Date.now();
 
-    const email = document.getElementById('email').value;
-    const pass = document.getElementById('password').value;
-
-    // 1. Check if currently banned
-    if (doc.exists && now < doc.data().unblockTime) {
-        const remaining = Math.ceil((doc.data().unblockTime - now) / 1000);
-        showStatus(`IP BANNED! Try again in ${remaining} seconds.`, 'error');
-        return;
-    }
-
-    try {
-        await auth.signInWithEmailAndPassword(email, pass);
-        // SUCCESS: Reset strikes on successful login
-        if (doc.exists) await blockRef.delete();
-    } catch (error) {
-        let strikes = 1;
-        if (doc.exists) strikes = (doc.data().strikes || 0) + 1;
-
-        // A. Spy Agent Reporting (Strike 3+)
-        if (strikes >= 3) {
-            logSpyAgentActivity(`SECURITY ALERT: Strike ${strikes}`, email, `Failed login from ${ip}`);
-        }
-
-        // B. Calculate Ban Time
-        let unblockTime = 0;
-        let banMsg = "";
-        
-        // Find the highest ban level reached
-        const strikeMilestones = Object.keys(BAN_LEVELS).map(Number).sort((a,b) => b - a);
-        const currentMilestone = strikeMilestones.find(m => strikes >= m);
-
-        if (currentMilestone) {
-            const duration = BAN_LEVELS[currentMilestone];
-            unblockTime = now + duration;
-            banMsg = `Too many failures. IP Banned for ${duration/1000}s.`;
-        }
-
-        // C. Update Database
-        await blockRef.set({
-            ip: ip,
-            strikes: strikes,
-            unblockTime: unblockTime,
-            lastAttempt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-
-        if (banMsg) showStatus(banMsg, 'error');
-        else showStatus(`Invalid Password. Strike ${strikes}`, 'error');
-    }
-}
 </script>
 </body>
 </html>
+
 
 
 
