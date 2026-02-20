@@ -962,6 +962,17 @@
 </div>
             <div id="account-settings-tab" class="tab-content">
                 <div class="admin-card">
+                    <h2><i class="fab fa-github"></i> GitHub API Integration</h2>
+                    <p style="margin-bottom: 15px; color: var(--secondary); font-size: 0.85em;">Store your GitHub Personal Access Token here. It will be hidden in the frontend and securely stored in the database for automatic image uploads.</p>
+                    
+                    <div class="form-group">
+                        <label>GitHub Personal Access Token</label>
+                        <input type="password" id="github-token-input" placeholder="Paste your ghp_... token here">
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="saveGitHubToken()">Save GitHub Token</button>
+                </div>
+                <div class="admin-card">
                     <h2><i class="fas fa-key"></i> Update Login Credentials</h2>
                     <p style="margin-bottom: 15px; color: var(--secondary); font-size: 0.85em;">Note: Changing these will take effect instantly in Firebase.</p>
                     
@@ -1801,8 +1812,8 @@ function loadSpyAgent() {
                     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                     document.getElementById(`${tabId}-tab`).classList.add('active');
                     
-                    if (tabId === 'account-history') loadHistory();
-                    if (tabId === 'account-settings') load2FASettingsUI();
+                   if (tabId === 'account-history') loadHistory();
+                    if (tabId === 'account-settings') { load2FASettingsUI(); loadGitHubTokenUI(); }
                     if (tabId === 'login-history') loadLoginHistory();
                     if (tabId === 'spy-agent') loadSpyAgent();
                 });
@@ -1901,12 +1912,20 @@ async function addArtwork(e) {
         const files = fileInput.files;
         if (files.length === 0) return alert("Please select at least one image file.");
 
-        // SESSION MEMORY: Only ask for token once per browser session
-        let GITHUB_TOKEN = sessionStorage.getItem('gh_upload_token');
+     // FETCH TOKEN FROM FIREBASE DATABASE
+        let GITHUB_TOKEN = "";
+        try {
+            const ghDoc = await db.collection('adminSettings').doc('github').get();
+            if (ghDoc.exists && ghDoc.data().token) {
+                GITHUB_TOKEN = ghDoc.data().token;
+            }
+        } catch(e) {
+            console.error("Failed to fetch GitHub token from DB", e);
+        }
+
         if (!GITHUB_TOKEN) {
-            GITHUB_TOKEN = prompt("Enter your GitHub Token (will be remembered for this session):");
-            if (!GITHUB_TOKEN) return;
-            sessionStorage.setItem('gh_upload_token', GITHUB_TOKEN);
+            showStatus("GitHub Token missing! Please set it in 'Account Settings'.", "error");
+            return;
         }
 
         const OWNER = 'jutt404'; 
@@ -1988,9 +2007,8 @@ async function addArtwork(e) {
         // Success message for database entry
         showStatus(`Artwork saved! Starting GitHub Live Monitor...`, "success");
 
-        // START LIVE DEPLOYMENT MONITOR
-        const token = sessionStorage.getItem('gh_upload_token');
-        if (token) monitorGitHubBuild(token); 
+       // START LIVE DEPLOYMENT MONITOR
+        if (GITHUB_TOKEN) monitorGitHubBuild(GITHUB_TOKEN);
 
         // Reset the form
         document.getElementById('add-artwork-form').reset();
@@ -2583,6 +2601,34 @@ async function addArtwork(e) {
                 currentSecurityData = { pinEnabled, pin, otpEnabled, secondaryEmail: secEmail };
             }).catch(e => showStatus(e.message, 'error'));
         }
+
+        // --- GITHUB TOKEN MANAGER ---
+        async function saveGitHubToken() {
+            const token = document.getElementById('github-token-input').value.trim();
+            if (!token) return showStatus("Please enter a valid GitHub token.", "error");
+
+            try {
+                // Save to Firestore securely
+                await db.collection('adminSettings').doc('github').set({ token: token }, { merge: true });
+                showStatus("GitHub Token securely saved to database!", "success");
+                
+                // Keep it visually hidden after saving
+                document.getElementById('github-token-input').value = "";
+                document.getElementById('github-token-input').placeholder = "******** (Token is saved in database)";
+            } catch (error) {
+                showStatus(`Error saving token: ${error.message}`, "error");
+            }
+        }
+
+        async function loadGitHubTokenUI() {
+            try {
+                // Check if a token already exists to update the placeholder text
+                const ghDoc = await db.collection('adminSettings').doc('github').get();
+                if (ghDoc.exists && ghDoc.data().token) {
+                    document.getElementById('github-token-input').placeholder = "******** (Token is configured & active)";
+                }
+            } catch(e) {}
+        }
         // --- NEW: LOGIN HISTORY TRACKING (WITH GEOLOCATION) ---
 function loadLoginHistory() {
     const table = document.getElementById('login-history-table');
@@ -2709,6 +2755,7 @@ async function monitorGitHubBuild(token) {
 </script>
 </body>
 </html>
+
 
 
 
