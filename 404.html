@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 | Lost in Art | Arrty Trails</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- THEME VARIABLES --- */
+        :root {
+            --accent: #c89b3c;
+            --primary-dark-bg: #0a0a0a;
+            --text-on-dark: #f0f0f0;
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-dark-bg);
+            color: var(--text-on-dark);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        /* --- MARQUEE STYLES (MATCHES INDEX) --- */
+        #marquee-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 8px 0;
+            z-index: 1001;
+            overflow: hidden;
+            white-space: nowrap;
+            display: none; /* Controlled by JS */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        #marquee-banner p {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee-animation 25s linear infinite;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        @keyframes marquee-animation {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        body.marquee-visible {
+            padding-top: 40px; 
+        }
+
+        /* --- 404 CONTENT STYLES --- */
+        #three-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .error-container {
+            z-index: 10;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            max-width: 600px;
+            margin: 20px;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 8rem;
+            margin: 0;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        p {
+            margin-bottom: 30px;
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 35px;
+            background: var(--accent);
+            color: #000;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            background: #b08932;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 5rem; }
+            h2 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body data-theme="theme-default">
+
+    <div id="marquee-banner">
+        <p id="marquee-text"></p>
+    </div>
+
+    <canvas id="three-canvas"></canvas>
+
+    <div class="error-container">
+        <h1>404</h1>
+        <h2>Lost in Art?</h2>
+        <p>It seems the page you were looking for has wandered out of the gallery. Don't worry, every artist makes a wrong stroke sometimes.</p>
+        <a href="index.html" class="btn">Return to Homepage</a>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // 1. Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4x1fNeC6r6znsm_HMJU1sJTVjeyIIIZU",
+            authDomain: "zoyearrtyweb.firebaseapp.com",
+            projectId: "zoyearrtyweb",
+            storageBucket: "zoyearrtyweb.firebasestorage.app",
+            messagingSenderId: "1033442222787",
+            appId: "1:1033442222787:web:cf008858fd8f3309f87876"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // 2. Theme Sync Logic
+        async function sync404Theme() {
+            try {
+                const snapshot = await db.collection("siteSettings").get();
+                const settingsMap = new Map(snapshot.docs.map(doc => [doc.id, doc.data()]));
+
+                // Apply Marquee
+                const m = settingsMap.get('marquee');
+                const banner = document.getElementById('marquee-banner');
+                const textEl = document.getElementById('marquee-text');
+                if (m && m.enabled && m.text) {
+                    textEl.textContent = m.text;
+                    banner.style.backgroundColor = m.backgroundColor || '#c89b3c';
+                    banner.style.color = m.textColor || '#000';
+                    banner.style.display = 'block';
+                    document.body.classList.add('marquee-visible');
+                }
+
+                // Apply Theme ID
+                const activeTheme = settingsMap.get('activeTheme');
+                if(activeTheme) document.body.dataset.theme = activeTheme.themeId;
+
+                // Apply Manual Colors
+                const manualColors = settingsMap.get('manualThemeColors');
+                if (activeTheme?.themeId === 'theme-manual' && manualColors) {
+                    for (const [key, value] of Object.entries(manualColors)) {
+                        document.documentElement.style.setProperty(key, value);
+                    }
+                }
+
+                // Get 3D Background choice
+                const bg = settingsMap.get('backgroundStyle');
+                initThreeJS(bg ? bg.theme : 'stardust');
+
+            } catch (error) {
+                console.error("404 Sync Failed:", error);
+                initThreeJS('stardust'); // Fallback
+            }
+        }
+
+        // 3. Three.js Logic (Synced with your background settings)
+        function initThreeJS(themeName) {
+            const canvas = document.getElementById("three-canvas");
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(500 * 3);
+            for (let i = 0; i < positions.length; i++) {
+                positions[i] = (Math.random() - 0.5) * 10;
+            }
+            geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+
+            // Set color based on theme
+            let pColor = 0xc89b3c; // Default Gold
+            if (themeName === 'oceanic') pColor = 0x3498db;
+            if (themeName === 'crimson') pColor = 0xc0392b;
+            if (themeName === 'forest') pColor = 0x27ae60;
+
+            const material = new THREE.PointsMaterial({ size: 0.02, color: pColor, transparent: true, opacity: 0.7 });
+            const particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+            camera.position.z = 5;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                particles.rotation.x += 0.0005;
+                particles.rotation.y += 0.001;
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            window.addEventListener("resize", () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", sync404Theme);
+    </script>
+</body>
+</html>
