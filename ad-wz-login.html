@@ -9,6 +9,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+     <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2c3e50">
     <style>
         :root {
             --primary: #2c3e50; --secondary: #e74c3c; --accent: #3498db; --light: #ecf0f1; --dark-bg: #222b3c; --dark-card: #2c3a4f; --dark-text: #ecf0f1; --dark-border: #4a5a70; --text: #333; --shadow: 0 4px 6px rgba(0, 0, 0, 0.1); --transition: all 0.3s ease; --gold: #ffd700; --success: #27ae60; --warning: #f39c12; --info: #3498db;
@@ -2758,11 +2760,18 @@ async function monitorGitHubBuild(token) {
 }
 
     
-
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+            .then(() => console.log("PWA Service Worker Active"))
+            .catch(err => console.log("PWA failed: ", err));
+    }
+</script>
 
 </script>
 </body>
 </html>
+
 
 
 
