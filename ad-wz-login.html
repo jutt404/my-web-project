@@ -1899,126 +1899,123 @@ function loadSpyAgent() {
             container.appendChild(div);
         }
 
-   
-async function addArtwork(e) {
-    e.preventDefault();
-    
-    const sourceType = document.querySelector('input[name="img_source"]:checked').value;
-    const serviceId = await getNextServiceId(); // Generate clean ID for naming
-    let finalImagePaths = [];
+ async function addArtwork(e) {
+        e.preventDefault();
+        
+        const sourceType = document.querySelector('input[name="img_source"]:checked').value;
+        const serviceId = await getNextServiceId(); // Generate clean ID for naming
+        let finalImagePaths = [];
+        let GITHUB_TOKEN = ""; // <--- FIX: Moved to the top so the whole function can see it!
 
-    // --- PHASE 1: HANDLING THE IMAGE(S) ---
-    if (sourceType === 'upload') {
-        const fileInput = document.getElementById('imageUpload');
-        const files = fileInput.files;
-        if (files.length === 0) return alert("Please select at least one image file.");
+        // --- PHASE 1: HANDLING THE IMAGE(S) ---
+        if (sourceType === 'upload') {
+            const fileInput = document.getElementById('imageUpload');
+            const files = fileInput.files;
+            if (files.length === 0) return alert("Please select at least one image file.");
 
-     // FETCH TOKEN FROM FIREBASE DATABASE
-        let GITHUB_TOKEN = "";
-        try {
-            const ghDoc = await db.collection('adminSettings').doc('github').get();
-            if (ghDoc.exists && ghDoc.data().token) {
-                GITHUB_TOKEN = ghDoc.data().token;
-            }
-        } catch(e) {
-            console.error("Failed to fetch GitHub token from DB", e);
-        }
-
-        if (!GITHUB_TOKEN) {
-            showStatus("GitHub Token missing! Please set it in 'Account Settings'.", "error");
-            return;
-        }
-
-        const OWNER = 'jutt404'; 
-        const REPO = 'my-web-project';
-        const timestamp = Date.now(); // <-- FIX: Added timestamp to guarantee unique names
-
-        // Loop through multiple photos
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            // FIX: Added timestamp to the name so it NEVER throws a 422 "Already Exists" error
-            const fileName = `${serviceId}_${timestamp}_${i}.jpg`; 
-            const newPath = `img/${fileName}`;
-
-            showStatus(`Uploading image ${i+1} of ${files.length}...`, "info");
-
-            // Convert to Base64 for GitHub API
-            const base64data = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result.split(',')[1]);
-                reader.readAsDataURL(file);
-            });
-
+            // FETCH TOKEN FROM FIREBASE DATABASE
             try {
-                const upload = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${newPath}`, {
-                    method: 'PUT',
-                    headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: `Direct Upload: ${fileName}`, content: base64data })
+                const ghDoc = await db.collection('adminSettings').doc('github').get();
+                if (ghDoc.exists && ghDoc.data().token) {
+                    GITHUB_TOKEN = ghDoc.data().token;
+                }
+            } catch(e) {
+                console.error("Failed to fetch GitHub token from DB", e);
+            }
+
+            if (!GITHUB_TOKEN) {
+                showStatus("GitHub Token missing! Please set it in 'Account Settings'.", "error");
+                return;
+            }
+
+            const OWNER = 'jutt404'; 
+            const REPO = 'my-web-project';
+            const timestamp = Date.now();
+
+            // Loop through multiple photos
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileName = `${serviceId}_${timestamp}_${i}.jpg`; 
+                const newPath = `img/${fileName}`;
+
+                showStatus(`Uploading image ${i+1} of ${files.length}...`, "info");
+
+                // Convert to Base64 for GitHub API
+                const base64data = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                    reader.readAsDataURL(file);
                 });
 
-                if (upload.ok) {
-                    finalImagePaths.push(newPath); // Save clean path for Firebase
-                } else if (upload.status === 401) {
-                    sessionStorage.removeItem('gh_upload_token'); // Clear bad token
-                    return alert("Token invalid. Please refresh and try again.");
-                } else if (upload.status === 422) {
-                    console.error("422 Error: File already exists or unprocessable data.");
+                try {
+                    const upload = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${newPath}`, {
+                        method: 'PUT',
+                        headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: `Direct Upload: ${fileName}`, content: base64data })
+                    });
+
+                    if (upload.ok) {
+                        finalImagePaths.push(newPath); // Save clean path for Firebase
+                    } else if (upload.status === 401) {
+                        return alert("Token invalid. Please check Account Settings and try again.");
+                    } else if (upload.status === 422) {
+                        console.error("422 Error: File already exists or unprocessable data.");
+                    }
+                } catch (err) {
+                    console.error("Upload error:", err);
                 }
-            } catch (err) {
-                console.error("Upload error:", err);
+
+                // THE SAFETY DELAY: 2-second wait to prevent build errors
+                if (i < files.length - 1) await new Promise(r => setTimeout(r, 2000));
             }
-
-            // THE SAFETY DELAY: 2-second wait to prevent build errors
-            if (i < files.length - 1) await new Promise(r => setTimeout(r, 2000));
+        } 
+        // --- CASE B: THE OLD LINK METHOD ---
+        else {
+            finalImagePaths = document.getElementById('imageUrls').value.split(',').map(u=>u.trim()).filter(Boolean);
+            if (finalImagePaths.length === 0) return alert("Please paste at least one image link.");
         }
-    } 
-    // --- CASE B: THE OLD LINK METHOD ---
-    else {
-        finalImagePaths = document.getElementById('imageUrls').value.split(',').map(u=>u.trim()).filter(Boolean);
-        if (finalImagePaths.length === 0) return alert("Please paste at least one image link.");
+
+        // --- PHASE 2: DATABASE DATA PREPARATION ---
+        const sizes = Array.from(document.querySelectorAll('#size-rows-container .size-row')).map(row => ({
+            name: row.querySelector('.size-name').value,
+            price: parseFloat(row.querySelector('.size-price').value) || 0,
+            isDefault: row.querySelector('input[type="radio"]').checked,
+            status: 'available'
+        }));
+
+        const artworkData = {
+            title: document.getElementById('title').value,
+            artist: document.getElementById('artist').value,
+            imageUrls: finalImagePaths, 
+            price: parseFloat(document.getElementById('price').value),
+            discountPrice: parseFloat(document.getElementById('discountPrice').value) || null,
+            stock: parseInt(document.getElementById('stock').value) || 0,
+            category: document.getElementById('category').value,
+            description: document.getElementById('description').value,
+            status: document.getElementById('p-availability').value,
+            sizes: sizes,
+            serviceId: serviceId,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        // --- PHASE 3: FINAL SAVING & AUTO-MONITOR ---
+        try {
+            await db.collection("artworks").add(artworkData);
+            
+            // Success message for database entry
+            showStatus(`Artwork saved! Starting GitHub Live Monitor...`, "success");
+
+            // START LIVE DEPLOYMENT MONITOR (Only triggers if a token was successfully loaded)
+            if (GITHUB_TOKEN) monitorGitHubBuild(GITHUB_TOKEN); 
+
+            // Reset the form
+            document.getElementById('add-artwork-form').reset();
+            document.getElementById('size-rows-container').innerHTML = '';
+            loadArtworks();
+        } catch (error) {
+            showStatus(`Database Error: ${error.message}`, "error");
+        }
     }
-
-    // --- PHASE 2: DATABASE DATA PREPARATION ---
-    const sizes = Array.from(document.querySelectorAll('#size-rows-container .size-row')).map(row => ({
-        name: row.querySelector('.size-name').value,
-        price: parseFloat(row.querySelector('.size-price').value) || 0,
-        isDefault: row.querySelector('input[type="radio"]').checked,
-        status: 'available'
-    }));
-
-    const artworkData = {
-        title: document.getElementById('title').value,
-        artist: document.getElementById('artist').value,
-        imageUrls: finalImagePaths, 
-        price: parseFloat(document.getElementById('price').value),
-        discountPrice: parseFloat(document.getElementById('discountPrice').value) || null,
-        stock: parseInt(document.getElementById('stock').value) || 0,
-        category: document.getElementById('category').value,
-        description: document.getElementById('description').value,
-        status: document.getElementById('p-availability').value,
-        sizes: sizes,
-        serviceId: serviceId,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-
-    // --- PHASE 3: FINAL SAVING & AUTO-MONITOR ---
-    try {
-        await db.collection("artworks").add(artworkData);
-        
-        // Success message for database entry
-        showStatus(`Artwork saved! Starting GitHub Live Monitor...`, "success");
-
-       // START LIVE DEPLOYMENT MONITOR
-        if (GITHUB_TOKEN) monitorGitHubBuild(GITHUB_TOKEN);
-
-        // Reset the form
-        document.getElementById('add-artwork-form').reset();
-        document.getElementById('size-rows-container').innerHTML = '';
-        loadArtworks();
-    } catch (error) {
-        showStatus(`Database Error: ${error.message}`, "error");
-    }
-}
         async function getNextServiceId() { const snap = await db.collection("artworks").orderBy("createdAt", "desc").limit(1).get(); if (snap.empty) return 'AT1001'; const lastId = snap.docs[0].data().serviceId || 'AT1000'; const num = parseInt(lastId.replace(/\D/g, ''), 10); return `AT${isNaN(num) ? 1001 : num + 1}`; }
 
         async function editArtwork(id) {
@@ -2756,6 +2753,7 @@ async function monitorGitHubBuild(token) {
 </script>
 </body>
 </html>
+
 
 
 
