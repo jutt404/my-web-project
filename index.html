@@ -23,19 +23,7 @@
     <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
     <link rel="manifest" href="manifest.json">
      <style>
-        <script>
-    // This runs instantly before the body even draws
-    (function() {
-        const savedTheme = localStorage.getItem('activeTheme');
-        if (savedTheme) {
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            // Also apply to body once it exists
-            document.addEventListener('DOMContentLoaded', () => {
-                document.body.setAttribute('data-theme', savedTheme);
-            });
-        }
-    })();
-</script>
+   
     <style>
         
         /* --- NEW: Marquee Banner Styles --- */
@@ -734,6 +722,7 @@ if (installBtn) {
 </script>
 </body>
 </html>
+
 
 
 
