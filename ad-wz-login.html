@@ -1704,23 +1704,30 @@ async function logSpyAgentActivity(actionType, emailAttempt = "N/A", extraInfo =
 }
 
 // --- UPGRADED LOGIN TRACKER ---
+// --- UPGRADED LOGIN TRACKER ---
 async function trackAdminLogin(user) {
     try {
+        // 1. Lock it immediately to prevent rapid-fire duplicate runs
+        sessionStorage.setItem('loginTracked', 'true');
+
         const browserInfo = navigator.userAgent || "Unknown Browser";
         const { ip, loc } = await getVisitorInfo();
 
-        await db.collection('loginHistory').add({
+        // 2. Generate a custom, unique ID based on the user and exact time
+        const customLoginId = user.uid + '_' + Date.now();
+
+        // 3. Use .set() with merge: true to make it bulletproof against network retries
+        await db.collection('loginHistory').doc(customLoginId).set({
             email: user.email || "Unknown Email",
             uid: user.uid,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             device: browserInfo,
             location: loc,
             ip: ip
-        });
-        sessionStorage.setItem('loginTracked', 'true');
+        }, { merge: true });
+        
     } catch(e) { console.error("Critical error in trackAdminLogin:", e); }
 }
-
         // --- CRASH-PROOF SPY AGENT LOADER ---
 function loadSpyAgent() {
     const table = document.getElementById('spy-agent-table');
@@ -2756,6 +2763,7 @@ async function monitorGitHubBuild(token) {
 </script>
 </body>
 </html>
+
 
 
 
