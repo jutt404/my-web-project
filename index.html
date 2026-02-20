@@ -21,7 +21,7 @@
 
    
     <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
-    
+    <link rel="manifest" href="manifest.json">
     <style>
         /* --- NEW: Marquee Banner Styles --- */
         #marquee-banner {
@@ -676,9 +676,41 @@
    
     
     <script src="https://wzdev.store/s0/id738324.js"></script>
+<script>
 
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+            .then(() => console.log("Gallery App Active"))
+            .catch(err => console.error("PWA failed: ", err));
+    });
+}
+
+let deferredPrompt;
+const installBtn = document.getElementById('pwa-install-btn'); 
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (installBtn) installBtn.style.display = 'block';
+});
+
+if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                installBtn.style.display = 'none';
+                deferredPrompt = null;
+            }
+        }
+    });
+}
+</script>
 </body>
 </html>
+
 
 
 
