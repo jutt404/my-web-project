@@ -26,39 +26,50 @@
    
     <style>
         
-        /* --- NEW: Marquee Banner Styles --- */
-        #marquee-banner {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 8px 0;
-            z-index: 1001; /* Above header */
-            overflow: hidden;
-            white-space: nowrap;
-            display: none; /* Hidden by default */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        #marquee-banner p {
-            display: inline-block;
-            padding-left: 100%;
-            animation: marquee-animation 25s linear infinite;
-            font-weight: 500;
-        }
-        @keyframes marquee-animation {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-100%); }
-        }
-        header {
-            top: 0; /* Reset top position */
-            transition: top 0.3s ease;
-        }
-        body.marquee-visible header {
-            top: 38px; /* Adjust header position when marquee is visible */
-        }
-        body.marquee-visible .hero {
-             padding-top: 118px; /* Adjust hero padding to account for banner and header */
-        }
+        /* --- Marquee Banner Styles --- */
+#marquee-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 8px 0;
+    z-index: 1100; /* Higher than header (1000) */
+    overflow: hidden;
+    white-space: nowrap;
+    display: none; /* Hidden by default, JS will show it */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* This is the trigger that shows it */
+body.marquee-active #marquee-banner {
+    display: block;
+}
+
+#marquee-banner p {
+    display: inline-block;
+    padding-left: 100%;
+    animation: marquee-animation 25s linear infinite;
+    font-weight: 500;
+}
+
+@keyframes marquee-animation {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+/* Adjust header only when banner is active */
+header {
+    top: 0; 
+    transition: top 0.3s ease;
+}
+
+body.marquee-active header {
+    top: 38px; /* Slides header down */
+}
+
+body.marquee-active .hero {
+    padding-top: 118px; /* Prevents text cutoff */
+}
         
         /* --- NEW FEATURE: THEME COLORS --- */
         /* Each theme defines a new color palette. The existing .light-theme class will still work on top of these. */
@@ -723,6 +734,7 @@ if (installBtn) {
 </script>
 </body>
 </html>
+
 
 
 
