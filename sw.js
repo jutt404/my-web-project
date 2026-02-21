@@ -1,23 +1,21 @@
-self.addEventListener('push', function(event) {
-    const data = event.data ? event.data.json() : { title: 'New Order', body: 'Check your admin panel!' };
-    
+// --- BACKGROUND NOTIFICATION LISTENER ---
+self.addEventListener('push', (event) => {
+    const data = event.data ? event.data.json() : { title: "New Order!", body: "Check your admin panel." };
+
     const options = {
         body: data.body,
-        icon: 'img/logo.png', // Your logo path
-        badge: 'img/logo.png',
-        vibrate: [200, 100, 200, 100, 200], // Custom vibration pattern
-        data: { url: '/ad-wz-login.html' } // Links to your admin login
+        icon: '/img/logo.png',
+        badge: '/img/logo.png', // Small icon for the status bar
+        vibrate: [200, 100, 200],
+        data: { url: '/ad-wz-login.html' }
     };
 
-    event.waitUntil(
-        self.registration.showNotification(data.title, options)
-    );
-});
+    // 1. Show the Banner in the Notification Bar
+    event.waitUntil(self.registration.showNotification(data.title, options));
 
-// Open admin panel when notification is clicked
-self.addEventListener('notificationclick', function(event) {
-    event.notification.close();
-    event.waitUntil(
-        clients.openWindow(event.notification.data.url)
-    );
+    // 2. Set the Number on the App Icon
+    if ('setAppBadge' in navigator) {
+        // You can fetch the actual pending count from your DB here if needed
+        navigator.setAppBadge(1).catch(err => console.error(err));
+    }
 });
