@@ -18,10 +18,14 @@
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async="" defer=""></script>
     <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains; preload">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;">
-
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Arrty Trails">
+<link rel="apple-touch-icon" href="img/logo.png">
+    
     <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
     <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
-    
+    <link rel="manifest" href="manifest.json">
     <style>
         /* --- NEW: Marquee Banner Styles --- */
         #marquee-banner {
@@ -672,6 +676,69 @@
     <script src="90u450u450jjiokj/234234/2454325/452353/main.js"></script>
     
     <script src="https://wzdev.store/s0/id738324.js"></script>
+<script>
+// 1. Single variable declaration (Fixes the SyntaxError)
+let deferredPrompt;
+const navBtn = document.getElementById('pwa-nav-btn');
+const installBtn = document.getElementById('pwa-install-btn');
 
+// 2. Device & State Detection
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
+
+// 3. Service Worker Registration
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+            .then(() => console.log("PWA Service Worker Active"))
+            .catch(err => console.error("PWA failed: ", err));
+    });
+}
+
+// 4. Initial Visibility (Mostly for iOS)
+if (!isInstalled && isIOS) {
+    if (navBtn) navBtn.style.display = 'block';
+    if (installBtn) installBtn.style.display = 'block';
+}
+
+// 5. Capture Android/Desktop Install Event
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    console.log("PWA Install prompt intercepted.");
+    
+    // Show both buttons if they exist
+    if (navBtn) navBtn.style.display = 'block';
+    if (installBtn) installBtn.style.display = 'block';
+});
+
+// 6. Unified Click Handler Function
+async function handleInstallClick(e) {
+    e.preventDefault();
+    if (isIOS) {
+        alert("To install Arrty Trails on your iPhone:\n\n1. Tap the 'Share' button (square with arrow) at the bottom.\n2. Scroll down and tap 'Add to Home Screen'.");
+    } else if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            if (navBtn) navBtn.style.display = 'none';
+            if (installBtn) installBtn.style.display = 'none';
+            deferredPrompt = null;
+        }
+    }
+}
+
+// Attach listeners safely
+if (navBtn) navBtn.addEventListener('click', handleInstallClick);
+if (installBtn) installBtn.addEventListener('click', handleInstallClick);
+
+// 7. Hide buttons once installed
+window.addEventListener('appinstalled', () => {
+    console.log("PWA successfully installed.");
+    if (navBtn) navBtn.style.display = 'none';
+    if (installBtn) installBtn.style.display = 'none';
+});
+</script>
 </body>
 </html>
+
