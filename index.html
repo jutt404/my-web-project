@@ -28,47 +28,38 @@
         
  /* --- Optimized Marquee (Matches Product File) --- */
 #marquee-banner {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    padding: 10px 0;
-    z-index: 2000; /* Much higher than header */
-    overflow: hidden;
-    white-space: nowrap;
-    display: none; /* JS will show this */
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-}
-
-#marquee-text {
-    display: inline-block;
-    padding-left: 100%;
-    animation: marquee-animation 25s linear infinite;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-@keyframes marquee-animation {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
-}
-
-/* Layout logic to prevent overlapping */
-header {
-    top: 0;
-    transition: top 0.3s ease-in-out;
-    z-index: 1000;
-}
-
-/* When active, slide the header down smoothly */
-body.marquee-visible header {
-    top: 40px; 
-}
-
-/* Adjust the Hero section so it doesn't hide under the header */
-body.marquee-visible .hero {
-    padding-top: 140px;
-}
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 8px 0;
+            z-index: 1001; /* Above header */
+            overflow: hidden;
+            white-space: nowrap;
+            display: none; /* Hidden by default */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        #marquee-banner p {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee-animation 25s linear infinite;
+            font-weight: 500;
+        }
+        @keyframes marquee-animation {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+        header {
+            top: 0; /* Reset top position */
+            transition: top 0.3s ease;
+        }
+        body.marquee-visible header {
+            top: 38px; /* Adjust header position when marquee is visible */
+        }
+        body.marquee-visible .hero {
+             padding-top: 118px; /* Adjust hero padding to account for banner and header */
+        }
+        
         
         /* 1. Default (Your Original Gold/Black) */
         body[data-theme="theme-default"] {
@@ -358,10 +349,9 @@ body.marquee-visible .hero {
 </head>
 
 <body>
- <div id="marquee-banner">
-    <p id="marquee-text"></p>
-</div>
-<canvas id="three-canvas"></canvas>
+  <div id="marquee-banner" style="background-color: rgb(255, 181, 175); color: rgb(0, 0, 0); display: block;"><p id="marquee-text"></p></div>
+    <canvas id="three-canvas" width="400" height="667" style="width: 400px; height: 667px; display: block;"></canvas>
+
     <header>
         <div class="container header-content">
             <a href="index.html" class="logo">
@@ -730,6 +720,7 @@ if (installBtn) {
 </script>
 </body>
 </html>
+
 
 
 
