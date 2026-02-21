@@ -1284,18 +1284,7 @@
         initAdminPanel();
     }
 
-    function initAdminPanel() {
-        if (isPanelInitialized) return;
-        isPanelInitialized = true;
-        document.getElementById('admin-name').textContent = auth.currentUser.email.split('@')[0];
-        setupTabs();
-        loadDashboard();
-        loadArtworks();
-        loadOrders();
-        setupNotifications();
-    startOrderListener();
-        // Add other loaders here (loadCoupons, loadSiteSettings, etc.)
-    }
+ 
 // 1. Audio Setup
 const orderSound = new Audio('sounds/order-alert.mp3'); 
 
@@ -1404,15 +1393,7 @@ function startOrderListener() {
         document.getElementById('total-artworks').textContent = arts.size;
     }
 
-    // Initialization sequence
-    function initAdminPanel() {
-        if (isPanelInitialized) return;
-        isPanelInitialized = true;
-        document.getElementById('admin-name').textContent = auth.currentUser.email.split('@')[0];
-        setupTabs();
-        loadDashboard();
-        // Call all your other original load functions here...
-    }
+    
 
     function showLoginScreen() {
         document.getElementById('login-screen').classList.add('show');
@@ -1539,36 +1520,47 @@ function startOrderListener() {
             try { await fn(); } catch(e) { console.error(`Failed to load ${fn.name}:`, e); }
         }
 
-        function initAdminPanel() {
-            if (isPanelInitialized) return;
-            isPanelInitialized = true;
-            
-            try { 
-                const safeName = auth.currentUser.email ? auth.currentUser.email.split('@')[0] : 'Admin';
-                document.getElementById('admin-name').textContent = safeName;
-            } catch(e) {}
-            
-            safeLoad(setupTabs);
-            safeLoad(setupEventListeners);
-            safeLoad(loadDashboard);
-            safeLoad(loadArtworks);
-            safeLoad(loadOrders);
-            safeLoad(loadCoupons);
-            safeLoad(loadPaymentMethods);
-            safeLoad(loadWebsiteTheme);
-            safeLoad(loadDeliveryFee);
-            safeLoad(loadSiteSettings);
-            safeLoad(loadReceiptSettings);
-            safeLoad(loadPolicySettings);
-            safeLoad(loadCustomSections);
-            safeLoad(loadAdminTheme);
-            safeLoad(loadHistory); 
-            safeLoad(loadLoginHistory);
-            safeLoad(load2FASettingsUI);
-            safeLoad(loadSpyAgent);
-            safeLoad(loadGitHubTokenUI);
-        }
+       
+function initAdminPanel() {
+    if (isPanelInitialized) return;
+    isPanelInitialized = true;
+    
+    console.log("🚀 Master Admin Panel Initializing...");
 
+    // 1. Set Admin Name display
+    try {
+        const safeName = auth.currentUser.email ? auth.currentUser.email.split('@')[0] : 'Admin';
+        document.getElementById('admin-name').textContent = safeName;
+    } catch(e) { console.error("Name error:", e); }
+
+    // 2. Load Core Systems
+    setupTabs();
+    setupEventListeners();
+    
+    // 3. Load All Data Tabs
+    safeLoad(loadDashboard);
+    safeLoad(loadArtworks);
+    safeLoad(loadOrders);
+    safeLoad(loadCoupons);
+    safeLoad(loadPaymentMethods);
+    safeLoad(loadWebsiteTheme);
+    safeLoad(loadDeliveryFee);
+    safeLoad(loadSiteSettings);
+    safeLoad(loadReceiptSettings);
+    safeLoad(loadPolicySettings);
+    safeLoad(loadCustomSections);
+    safeLoad(loadAdminTheme);
+    safeLoad(loadHistory); 
+    safeLoad(loadLoginHistory);
+    safeLoad(load2FASettingsUI);
+    safeLoad(loadSpyAgent);
+    safeLoad(loadGitHubTokenUI);
+
+    // 4. START NOTIFICATIONS (The missing piece!)
+    console.log("🔔 Starting Order Alerts...");
+    setupNotifications();
+    startOrderListener();
+}
         // --- AUDIT SYSTEM WITH ADMIN EMAIL TRACKING ---
         async function logAction(action, collection, docId, oldData, newData, description) {
             const adminEmail = auth.currentUser ? auth.currentUser.email : "System"; 
@@ -2807,6 +2799,7 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
+
 
 
 
