@@ -1296,7 +1296,41 @@
     startOrderListener();
         // Add other loaders here (loadCoupons, loadSiteSettings, etc.)
     }
+// 1. Audio Setup
+const orderSound = new Audio('sounds/order-alert.mp3'); 
 
+// 2. Function to ask for Phone Permission
+async function setupNotifications() {
+    if ("Notification" in window) {
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+            console.log("✅ Notifications Enabled");
+        }
+    }
+}
+
+// 3. Function to watch for Orders in real-time
+function startOrderListener() {
+    db.collection('orders').where('status', '==', 'pending')
+        .onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added" && !snapshot.metadata.hasPendingWrites) {
+                    const d = change.doc.data();
+                    
+                    // Play Sound
+                    orderSound.play().catch(() => console.log("Click page to enable sound"));
+
+                    // Show Popup Banner
+                    if (Notification.permission === "granted") {
+                        new Notification("🛍️ New Order!", {
+                            body: `Order #${d.orderId} for Rs ${d.grandTotal}`,
+                            icon: 'img/logo.png'
+                        });
+                    }
+                }
+            });
+        });
+}
     function setupTabs() {
         document.querySelectorAll('.sidebar-menu a[data-tab]').forEach(link => {
             link.addEventListener('click', e => {
@@ -2769,50 +2803,11 @@ if ('serviceWorker' in navigator) {
             .catch(err => console.error("PWA registration failed: ", err));
     });
 }
-// 1. Audio Setup (Ensure you have this file in a 'sounds' folder)
-const orderSound = new Audio('sounds/order-alert.mp3'); 
 
-// 2. Request Notification Permission
-async function setupNotifications() {
-    if ("Notification" in window) {
-        const permission = await Notification.requestPermission();
-        if (permission === "granted") {
-            console.log("✅ Admin Notifications Active");
-        }
-    }
-}
-
-// 3. Real-time Order Listener for Popups & Sound
-function startOrderListener() {
-    db.collection('orders').where('status', '==', 'pending')
-        .onSnapshot((snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                // ONLY trigger for new orders added while the app is open
-                if (change.type === "added" && !snapshot.metadata.hasPendingWrites) {
-                    const orderData = change.doc.data();
-                    
-                    // Play the Ringtone
-                    orderSound.play().catch(() => console.log("Sound blocked: Click anywhere first."));
-
-                    // Show the Popup Notification
-                    if (Notification.permission === "granted") {
-                        const notification = new Notification("🛍️ New Order Received!", {
-                            body: `Order #${orderData.orderId} from ${orderData.customerName}`,
-                            icon: 'img/logo.png'
-                        });
-
-                        notification.onclick = () => {
-                            window.focus();
-                            notification.close();
-                        };
-                    }
-                }
-            });
-        });
-}
 </script>
 </body>
 </html>
+
 
 
 
