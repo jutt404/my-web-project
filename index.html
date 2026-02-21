@@ -24,10 +24,9 @@
     <link rel="manifest" href="manifest.json">
      <style>
    
-    <style>
-        
- /* --- Optimized Marquee (Matches Product File) --- */
-#marquee-banner {
+     <style>
+        /* --- NEW: Marquee Banner Styles --- */
+        #marquee-banner {
             position: fixed;
             top: 0;
             left: 0;
@@ -60,6 +59,8 @@
              padding-top: 118px; /* Adjust hero padding to account for banner and header */
         }
         
+        /* --- NEW FEATURE: THEME COLORS --- */
+        /* Each theme defines a new color palette. The existing .light-theme class will still work on top of these. */
         
         /* 1. Default (Your Original Gold/Black) */
         body[data-theme="theme-default"] {
@@ -717,6 +718,7 @@ if (installBtn) {
 </script>
 </body>
 </html>
+
 
 
 
