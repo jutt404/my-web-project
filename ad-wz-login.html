@@ -336,6 +336,29 @@
                 margin-top: 5px;
             }
         }
+        .sidebar-menu a[data-tab="orders"] {
+    position: relative;
+}
+
+/* The Red Dot Badge */
+.sidebar-menu a[data-tab="orders"].has-new::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    width: 10px;
+    height: 10px;
+    background-color: var(--secondary); /* Your red color */
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(231, 76, 60, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+}
     </style>
 </head>
 <body data-admin-theme="default">
@@ -1299,6 +1322,8 @@ async function setupNotifications() {
 }
 
 // 3. Function to watch for Orders in real-time
+let newOrderCount = 0;
+
 function startOrderListener() {
     db.collection('orders').where('status', '==', 'pending')
         .onSnapshot((snapshot) => {
@@ -1306,20 +1331,41 @@ function startOrderListener() {
                 if (change.type === "added" && !snapshot.metadata.hasPendingWrites) {
                     const d = change.doc.data();
                     
-                    // Play Sound
-                    orderSound.play().catch(() => console.log("Click page to enable sound"));
+                    // 1. Play Sound
+                    orderSound.play().catch(() => console.log("Tap screen to enable audio"));
 
-                    // Show Popup Banner
+                    // 2. Update Counts
+                    newOrderCount++;
+
+                    // 3. Show System Notification Bar Banner
                     if (Notification.permission === "granted") {
-                        new Notification("🛍️ New Order!", {
-                            body: `Order #${d.orderId} for Rs ${d.grandTotal}`,
-                            icon: 'img/logo.png'
+                        const notification = new Notification("🛍️ New Order!", {
+                            body: `Order #${d.orderId} from ${d.customerName}`,
+                            icon: 'img/logo.png',
+                            badge: 'img/logo.png', // Small icon for Android status bar
+                            vibrate: [200, 100, 200]
                         });
+                        notification.onclick = () => { window.focus(); notification.close(); };
                     }
+
+                    // 4. SET APP ICON BADGE (The number on your home screen icon)
+                    if ('setAppBadge' in navigator) {
+                        navigator.setAppBadge(newOrderCount).catch(console.error);
+                    }
+
+                    // 5. Add Sidebar Dot
+                    document.querySelector('.sidebar-menu a[data-tab="orders"]')?.classList.add('has-new');
                 }
             });
         });
 }
+
+// Clear badges when you click the Orders tab
+document.querySelector('.sidebar-menu a[data-tab="orders"]').addEventListener('click', () => {
+    newOrderCount = 0;
+    if ('clearAppBadge' in navigator) navigator.clearAppBadge();
+    document.querySelector('.sidebar-menu a[data-tab="orders"]').classList.remove('has-new');
+});
     function setupTabs() {
         document.querySelectorAll('.sidebar-menu a[data-tab]').forEach(link => {
             link.addEventListener('click', e => {
@@ -2799,6 +2845,7 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
+
 
 
 
