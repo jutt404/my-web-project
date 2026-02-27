@@ -1476,26 +1476,7 @@ function startOrderListener() {
                 }
             });
             
-            document.getElementById('login-form').addEventListener('submit', e => {
-                e.preventDefault();
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-                auth.signInWithEmailAndPassword(email, password).catch((err) => {
-                    console.error(err);
-                    failedLoginAttempts++; // Count the failure
-                    
-                    document.getElementById('login-error').style.display = 'block';
-                    document.getElementById('login-error').textContent = "Your password is wrong plz try again";
-
-                    // Trigger heavy data collection if 3 or more attempts fail
-                    if (failedLoginAttempts > 2) {
-                         logSpyAgentActivity("SECURITY ALERT: 3+ Failed Logins", email, `Error: ${err.message}. Possible brute force attempt.`);
-                    } else {
-                         logSpyAgentActivity("Failed Login Attempt", email, err.message);
-                    }
-                });
-            });
-        });
+          });
 
         function showLoginScreen() {
             document.getElementById('login-screen').classList.add('show'); 
@@ -1567,6 +1548,7 @@ function startOrderListener() {
             safeLoad(load2FASettingsUI);
             safeLoad(loadSpyAgent);
             safeLoad(loadGitHubTokenUI);
+            safeLoad(loadBanManager);
         }
 
         // --- AUDIT SYSTEM WITH ADMIN EMAIL TRACKING ---
@@ -1865,6 +1847,7 @@ function loadSpyAgent() {
                     if (tabId === 'account-settings') { load2FASettingsUI(); loadGitHubTokenUI(); }
                     if (tabId === 'login-history') loadLoginHistory();
                     if (tabId === 'spy-agent') loadSpyAgent();
+                    if (tabId === 'security-manager') loadBanManager();
                 });
             });
 
